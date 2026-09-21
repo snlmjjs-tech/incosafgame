@@ -116,7 +116,7 @@ let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let hasSave=!!loadSave();
-let scene='title', time=0, titleSel=0, endT=0;
+let scene='title', time=0, titleSel=0, endT=0, autoTalkNpc=null;
 const ui={mode:'play',dlg:null,choice:null,locked:false,fade:0,fadeTarget:null,fadeRes:null,banner:null};
 const held=[]; let hits=[]; const parts=[];
 const player={x:9,y:12,px:9*TS,py:12*TS,tx:9,ty:12,dir:'up',moving:false,anim:0};
@@ -1424,7 +1424,7 @@ function passable(x,y){
 }
 function fadeTo(t){return new Promise(res=>{if(ui.fade===t){res();return;}ui.fadeTarget=t;ui.fadeRes=res;});}
 async function goMap(id,x,y,dir){
-  sfx.door();await fadeTo(1);setMap(id);
+  sfx.door();await fadeTo(1);setMap(id);autoTalkNpc=null;
   player.x=player.tx=x;player.y=player.ty=y;player.px=x*TS;player.py=y*TS;player.dir=dir;player.moving=false;resetTrail();
   writeSave();await fadeTo(0);
   if(id==='garden'&&!save.seen2){save.seen2=true;writeSave();
@@ -1506,6 +1506,13 @@ function facingTarget(){
   const n=npcAt(x,y);if(n)return{npc:n,x,y};
   const ch=tileAt(cur,x,y);if((cur.tileTalk&&cur.tileTalk[ch])||TILE_TALK[ch])return{tile:ch,x,y};
   return null;
+}
+function checkAutoTalk(){
+  if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3){return;}
+  const t=facingTarget();
+  if(t&&t.npc){
+    if(t.npc!==autoTalkNpc){autoTalkNpc=t.npc;runScript(()=>talkNPC(t.npc));}
+  }else{autoTalkNpc=null;}
 }
 function interact(){
   const t=facingTarget();if(!t)return;
@@ -1881,7 +1888,7 @@ function frame(now){
   }
   if(ui.banner){ui.banner.t-=dt;if(ui.banner.t<=0)ui.banner=null;}
   if(ui.photo)ui.photo.t+=dt;if(ui.death)ui.death.t+=dt;if(ui.shake>0)ui.shake=Math.max(0,ui.shake-dt);
-  if(scene==='game'){stepPlayer(dt);updateNPCs(dt);updateParts(dt);}
+  if(scene==='game'){stepPlayer(dt);updateNPCs(dt);updateParts(dt);checkAutoTalk();}
   if(scene==='end'){endT+=dt;confetti();updateParts(dt);}
   render();
   requestAnimationFrame(frame);
