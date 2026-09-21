@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>INCOSAFIN aprende inglés en el colegio · v2</title>
+<title>INCOSAFITO aprende inglés en el colegio · v2</title>
 <style>
 :root{--navy:#14204f;--gold:#f7c600;--ink:#0a1230}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -28,7 +28,7 @@ body.touch #pad{display:flex}
 </head>
 <body>
 <div id="wrap">
-  <canvas id="game" aria-label="Juego: INCOSAFIN aprende inglés en el colegio"></canvas>
+  <canvas id="game" aria-label="Juego: INCOSAFITO aprende inglés en el colegio"></canvas>
   <input id="cd" type="text" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Código" aria-label="Ingresar código">
   <input id="nm" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Tu nombre / Your name" aria-label="Escribe tu nombre">
   <div id="pad">
@@ -45,7 +45,7 @@ body.touch #pad{display:flex}
 (()=>{
 'use strict';
 /* =====================================================================
-   INCOSAFIN aprende inglés en el colegio
+   INCOSAFITO aprende inglés en el colegio
    Juego RPG de una sola pieza (HTML). Sin internet, sin cuentas, sin instalar.
    ===================================================================== */
 const TS=32, MW=20, MH=15, CW=640, CH=480, SC=2;
@@ -120,7 +120,7 @@ let scene='title', time=0, titleSel=0, endT=0;
 const ui={mode:'play',dlg:null,choice:null,locked:false,fade:0,fadeTarget:null,fadeRes:null,banner:null};
 const held=[]; let hits=[]; const parts=[];
 const player={x:9,y:12,px:9*TS,py:12*TS,tx:9,ty:12,dir:'up',moving:false,anim:0};
-const MASCOT={name:'INCOSAFIN',mascot:true};
+const MASCOT={name:'INCOSAFITO',mascot:true};
 const PLAYER={get name(){return save.name||'Amigo';},get look(){return save.look||LOOK[AV[save.avatar||0].key];}};
 const AV=[{key:'boy1',label:'Boy 1'},{key:'girl1',label:'Girl 1'},{key:'boy2',label:'Boy 2'},{key:'girl2',label:'Girl 2'}];
 const fmt=s=>String(s).split('{n}').join(save.name||'Amigo');
@@ -1392,7 +1392,7 @@ async function ending(){
 }
 async function intro(){
   save.intro=true;
-  await say(MASCOT,'Hello, {n}! I am INCOSAFIN, the mascot of INCOSAF!','¡Hola, {n}! ¡Soy INCOSAFIN, la mascota de INCOSAF!');
+  await say(MASCOT,'Hello, {n}! I am INCOSAFITO, the mascot of INCOSAF!','¡Hola, {n}! ¡Soy INCOSAFITO, la mascota de INCOSAF!');
   await say(MASCOT,"Let's learn English at school together!",'¡Aprendamos inglés juntos en el colegio!');
   await say(MASCOT,'First, talk to Alvarin. Go, go!','Primero, habla con Alvarin. ¡Vamos!');
   writeSave();
@@ -1616,8 +1616,8 @@ function drawTitle(c){
   c.fillStyle='#183580';c.fillRect(0,CH-60,CW,60);
   c.strokeStyle='rgba(255,255,255,.15)';c.lineWidth=2;c.beginPath();c.moveTo(0,CH-60);c.lineTo(CW,CH-60);c.stroke();
   c.textAlign='center';c.textBaseline='middle';
-  c.font=F(58,'bold');c.lineJoin='round';c.lineWidth=10;c.strokeStyle=NAVY;c.strokeText('INCOSAFIN',CW/2,62);
-  const tg=c.createLinearGradient(0,32,0,92);tg.addColorStop(0,'#fff3b8');tg.addColorStop(.5,GOLD);tg.addColorStop(1,'#c99400');c.fillStyle=tg;c.fillText('INCOSAFIN',CW/2,62);
+  c.font=F(58,'bold');c.lineJoin='round';c.lineWidth=10;c.strokeStyle=NAVY;c.strokeText('INCOSAFITO',CW/2,62);
+  const tg=c.createLinearGradient(0,32,0,92);tg.addColorStop(0,'#fff3b8');tg.addColorStop(.5,GOLD);tg.addColorStop(1,'#c99400');c.fillStyle=tg;c.fillText('INCOSAFITO',CW/2,62);
   c.font=F(24,'bold');c.fillStyle='#fff';c.fillText('learns English at school!',CW/2,110);
   c.font=F(16,'italic');c.fillStyle='#ffe27a';c.fillText('Aprende inglés en el colegio',CW/2,136);
   const h=190,w=h*mAR(),bob=Math.sin(time*2.4)*5;
@@ -1673,9 +1673,9 @@ function drawSetup(c){
     c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.ellipse(120,392,54,9,0,0,TAU);c.fill();
     if(mascotOK())c.drawImage(mascot,120-w/2,384-h-bob,w,h);
     c.fillStyle='rgba(13,22,60,.96)';rr(c,215,40,400,170,20);c.fill();c.strokeStyle=GOLD;c.lineWidth=3;rr(c,215,40,400,170,20);c.stroke();
-    c.font=F(22,'bold');c.fillStyle='#fff';c.fillText('Hello! I am INCOSAFIN!',415,78);
+    c.font=F(22,'bold');c.fillStyle='#fff';c.fillText('Hello! I am INCOSAFITO!',415,78);
     c.font=F(30,'bold');c.fillStyle=GOLD;c.fillText("What's your name?",415,124);
-    c.font=F(15,'italic');c.fillStyle='#ffe27a';c.fillText('¡Hola! Soy INCOSAFIN. ¿Cómo te llamas?',415,166);
+    c.font=F(15,'italic');c.fillStyle='#ffe27a';c.fillText('¡Hola! Soy INCOSAFITO. ¿Cómo te llamas?',415,166);
     c.font=F(12);c.fillStyle='rgba(255,255,255,.75)';c.fillText('Escribe tu nombre (hasta 12 letras) / Type your name',415,192);
     btn(320,304,190,44,'Listo / OK  ▶',true,()=>finishName());
     if(time<setup.shake){c.font=F(14,'bold');c.fillStyle='#ff9a9a';c.fillText('¡Falta tu nombre! / Your name, please!',415,372);}
