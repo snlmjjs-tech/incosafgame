@@ -1070,15 +1070,35 @@ function drawPlayer(c){
   const walk=player.moving?Math.sin(player.anim*1.6):0;
   drawPersonOutlined(c,player.px+TS/2,player.py+TS-1,1,PLAYER.look,player.dir,bob,true,walk);
 }
+let _mOutC=null,_mOutS=null;
+function drawImageOutlined(c,img,cx,groundY,w,h,flip){
+  const pad=3,cw=Math.ceil(w)+pad*2,ch=Math.ceil(h)+pad*2;
+  if(!_mOutC){_mOutC=document.createElement('canvas');_mOutS=document.createElement('canvas');}
+  if(_mOutC.width!==cw||_mOutC.height!==ch){_mOutC.width=cw;_mOutC.height=ch;_mOutS.width=cw;_mOutS.height=ch;}
+  const octx=_mOutC.getContext('2d'),sctx=_mOutS.getContext('2d');
+  octx.clearRect(0,0,cw,ch);
+  octx.save();octx.translate(pad,pad);
+  if(flip){octx.translate(w,0);octx.scale(-1,1);}
+  octx.drawImage(img,0,0,w,h);
+  octx.restore();
+  sctx.clearRect(0,0,cw,ch);
+  sctx.drawImage(_mOutC,0,0);
+  sctx.globalCompositeOperation='source-in';
+  sctx.fillStyle='rgba(8,10,26,.55)';
+  sctx.fillRect(0,0,cw,ch);
+  sctx.globalCompositeOperation='source-over';
+  const dx=Math.round(cx-w/2-pad),dy=Math.round(groundY-h-pad);
+  for(const [ddx,ddy] of [[-1,0],[1,0],[0,-1],[0,1]])c.drawImage(_mOutS,dx+ddx,dy+ddy);
+  c.drawImage(_mOutC,dx,dy);
+}
 function drawFollower(c){
   const f=followerPos();if(Math.abs(f.dx)>.5)followerFlip=f.dx<0;
   const bx=f.x+TS/2,by=f.y+TS-1;
-  c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.ellipse(bx,by,10,3.4,0,0,TAU);c.fill();
+  c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(bx,by,10.5,3.6,0,0,TAU);c.fill();
   const bob=player.moving?Math.abs(Math.sin(player.anim+1))*3:Math.sin(time*2.2+1)*.8;
   const h=38,w=h*mAR();
-  c.save();c.translate(bx,by-bob);if(followerFlip)c.scale(-1,1);
-  if(mascotOK())c.drawImage(mascot,-w/2,-h,w,h);else{c.fillStyle=NAVY;c.beginPath();c.arc(0,-18,14,0,TAU);c.fill();}
-  c.restore();
+  if(mascotOK())drawImageOutlined(c,mascot,bx,by-bob,w,h,followerFlip);
+  else{c.fillStyle=NAVY;c.beginPath();c.arc(bx,by-bob-18,14,0,TAU);c.fill();}
 }
 let _aOutC=null,_aOutS=null;
 function drawAnimalOutlined(c,kind,cx,fy,s,t){
