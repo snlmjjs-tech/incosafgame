@@ -116,7 +116,7 @@ let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let hasSave=!!loadSave();
-let scene='title', time=0, titleSel=0, endT=0;
+let scene='title', time=0, titleSel=0, endT=0, autoTalkNpc=null;
 const ui={mode:'play',dlg:null,choice:null,locked:false,fade:0,fadeTarget:null,fadeRes:null,banner:null};
 const held=[]; let hits=[]; const parts=[];
 const player={x:9,y:12,px:9*TS,py:12*TS,tx:9,ty:12,dir:'up',moving:false,anim:0};
@@ -1424,7 +1424,7 @@ function passable(x,y){
 }
 function fadeTo(t){return new Promise(res=>{if(ui.fade===t){res();return;}ui.fadeTarget=t;ui.fadeRes=res;});}
 async function goMap(id,x,y,dir){
-  sfx.door();await fadeTo(1);setMap(id);
+  sfx.door();await fadeTo(1);setMap(id);autoTalkNpc=null;
   player.x=player.tx=x;player.y=player.ty=y;player.px=x*TS;player.py=y*TS;player.dir=dir;player.moving=false;resetTrail();
   writeSave();await fadeTo(0);
   if(id==='garden'&&!save.seen2){save.seen2=true;writeSave();
@@ -1485,6 +1485,7 @@ function updateNPCs(dt){
       if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=1.4+Math.random()*3;}
       else{n.px+=dx/dist*budget;n.py+=dy/dist*budget;}
     }else{
+      if(ui.locked)continue;
       n.wait-=dt;
       if(n.wait<=0){
         n.wait=1.4+Math.random()*3;
@@ -1506,6 +1507,13 @@ function facingTarget(){
   const n=npcAt(x,y);if(n)return{npc:n,x,y};
   const ch=tileAt(cur,x,y);if((cur.tileTalk&&cur.tileTalk[ch])||TILE_TALK[ch])return{tile:ch,x,y};
   return null;
+}
+function checkAutoTalk(){
+  if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3){return;}
+  const t=facingTarget();
+  if(t&&t.npc){
+    if(t.npc!==autoTalkNpc){autoTalkNpc=t.npc;runScript(()=>talkNPC(t.npc));}
+  }else{autoTalkNpc=null;}
 }
 function interact(){
   const t=facingTarget();if(!t)return;
@@ -1608,6 +1616,14 @@ function drawGame(c){
     c.fillRect(319,246+jt,2,8);
   }
   for(const d of cur.doors){if(d.req&&!d.req()){c.font=F(d.gate?22:15);c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff';c.fillText('🔒',d.x*TS+16,d.y*TS+(d.gate?16:18));}}
+  if(cur.books){
+    for(const k in cur.books){
+      const [bx,by]=k.split(',').map(Number),ix=bx*TS+16,bob=Math.sin(time*5)*3;
+      c.beginPath();c.arc(ix,by*TS-14+bob,10,0,TAU);c.fillStyle=GOLD;c.fill();c.strokeStyle='#fff';c.lineWidth=1.6;c.stroke();
+      c.font=F(12);c.textAlign='center';c.textBaseline='middle';c.fillText('📖',ix,by*TS-13+bob);
+      c.fillStyle=GOLD;c.beginPath();c.moveTo(ix-6,by*TS-1+bob);c.lineTo(ix+6,by*TS-1+bob);c.lineTo(ix,by*TS+6+bob);c.closePath();c.fill();
+    }
+  }
   const ents=cur.npcList.map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
     const bob=n.moving?Math.abs(Math.sin(n.anim))*2:Math.sin(time*2+n.x)*.6;
@@ -1881,7 +1897,7 @@ function frame(now){
   }
   if(ui.banner){ui.banner.t-=dt;if(ui.banner.t<=0)ui.banner=null;}
   if(ui.photo)ui.photo.t+=dt;if(ui.death)ui.death.t+=dt;if(ui.shake>0)ui.shake=Math.max(0,ui.shake-dt);
-  if(scene==='game'){stepPlayer(dt);updateNPCs(dt);updateParts(dt);}
+  if(scene==='game'){stepPlayer(dt);updateNPCs(dt);updateParts(dt);checkAutoTalk();}
   if(scene==='end'){endT+=dt;confetti();updateParts(dt);}
   render();
   requestAnimationFrame(frame);
