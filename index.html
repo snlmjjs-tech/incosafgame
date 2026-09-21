@@ -1192,12 +1192,19 @@ function lecternTile(c,px,py){
 function drawPortrait(c,spk,x,y,w,h){
   c.save();rr(c,x,y,w,h,10);c.clip();
   const g=c.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#3a57b8');g.addColorStop(1,'#1b2a68');c.fillStyle=g;c.fillRect(x,y,w,h);
+  c.globalAlpha=.5;const rg=c.createRadialGradient(x+w*.42,y+h*.34,2,x+w*.5,y+h*.4,w*.7);rg.addColorStop(0,'#7f9dff');rg.addColorStop(1,'rgba(127,157,255,0)');c.fillStyle=rg;c.fillRect(x,y,w,h);c.globalAlpha=1;
   if(spk.mascot){
     if(mascotOK()){const ar=mAR();let ih=h-6,iw=ih*ar;if(iw>w-6){iw=w-6;ih=iw/ar;}c.drawImage(mascot,x+(w-iw)/2,y+h-ih-3,iw,ih);}
   }else if(spk.animal){drawAnimal(c,spk.animal,x+w/2,y+h-8,3.4,time);
-  }else{const pp=spk.look&&spk.look.hs==='pompadour';drawPerson(c,x+w/2,y+h+(pp?19:14),pp?1.8:2.05,spk.look,'down',0,false);}
+  }else{
+    const look=normLook(spk.look),localTop=-58-(look.hs==='pompadour'?9:look.hs==='swept'?4:0),localBottom=-6,range=localBottom-localTop,zoom=1.08;
+    const s=h*zoom/range,fy=y+h+localBottom*s,cx=x+w/2;
+    drawPerson(c,cx,fy,s,spk.look,'down',0,false);
+  }
   c.restore();
+  c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=1;rr(c,x+1.5,y+h-4,w-3,4,2);c.stroke();
   c.strokeStyle=GOLD;c.lineWidth=2;rr(c,x,y,w,h,10);c.stroke();
+  c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=1;rr(c,x+2,y+2,w-4,h-4,8);c.stroke();
 }
 
 /* ---------- diálogo y preguntas ---------- */
