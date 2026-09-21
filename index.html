@@ -111,7 +111,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',avatar:0,seen2:false,seen3:false,seenF:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',avatar:0,seen2:false,seen3:false,seenF:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -311,6 +311,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.final.doors[0].req=()=>save.key;
   MAPS.final.doors[0].msg=()=>['This door is locked! I need the KEY from Tío Rafa.','¡Esta puerta está cerrada! Necesito la LLAVE del Tío Rafa.'];
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');
+  MAPS.plaza.npcs.push('mia');MAPS.computer.phoneAt={x:10,y:9};
   for(const m of Object.values(MAPS))if(!m.theme)m.theme=1;
 }
 for(const m of Object.values(MAPS)){
@@ -353,6 +354,7 @@ const LOOK={
  vice:{skin:'#f0cfa8',hair:'#8a8a92',shirt:'#7a1f3d',pants:'#3a1020',style:'bun',glasses:true,tie:'#f7c600'},
  nico:{skin:'#f0c8a0',hair:'#7a3b1e',shirt:'#3498db',pants:'#20306b',style:'short'},
  vale:{skin:'#e2b38a',hair:'#1f1a17',shirt:'#222222',pants:'#556677',style:'cap',cap:'#e74c3c'},
+ mia:{skin:'#f2c9a0',hair:'#6b3a22',shirt:'#ff6f91',pants:'#3a3d73'},
  architect:{skin:'#d9a577',hair:'#3a2417',shirt:'#e67e22',pants:'#3d4a5c',style:'cap',cap:'#f5c518',glasses:true},
  techie:{skin:'#f0c8a0',hair:'#111111',shirt:'#6c5ce7',pants:'#2b2b3a',style:'long',glasses:true},
  teacher_m:{skin:'#f0cfa8',hair:'#9a9aa4',shirt:'#e8e8e8',pants:'#2b3550',style:'short',glasses:true,tie:'#c0392b'},
@@ -365,7 +367,7 @@ Object.entries({
  pupil3:{hs:'curly',shoes:'#3e8ed0'},pupil4:{hs:'pigtails',bt:'skirt',shoes:'#f0a030'},pupil5:{hs:'buzz',bt:'shorts',shoes:'#ffffff'},pupil6:{hs:'bob',bt:'skirt',eyes:'#2e86de',shoes:'#9b6fd6'},
  pupil7:{hs:'bun',bt:'skirt',shoes:'#ff8fb1'},pupil8:{bt:'shorts',shoes:'#5cb85c'},sofia:{bt:'skirt',eyes:'#2e9a6b',shoes:'#ffffff'},artist:{bt:'skirt',eyes:'#8e44ad',shoes:'#f0a030'},
  vice:{bt:'skirt',shoes:'#333'},scientist:{eyes:'#6b4a2b'},nico:{hs:'spiky',eyes:'#2e86de',shoes:'#e05555'},techie:{hs:'bob',eyes:'#8e44ad',shoes:'#ffffff'},
- historian:{bt:'skirt',shoes:'#5a4630'},vale:{shoes:'#e74c3c'},coach:{shoes:'#ffffff'},
+ historian:{bt:'skirt',shoes:'#5a4630'},vale:{shoes:'#e74c3c'},coach:{shoes:'#ffffff'},mia:{hs:'pigtails',bt:'skirt',eyes:'#3b2a1c',shoes:'#ff9fc0'},
  guard:{style:'short',hs:'short',hair:'#0f0d0c',cap:null,skin:'#e2b38a',eyes:'#3b2a1c',shoes:'#2b2d3a'},
  principal:{style:'short',hs:'pompadour',hair:'#0f0d0c',glasses:'bold',skin:'#f0cfa8',shirt:'#14204f',pants:'#1c2340',tie:'#f7c600',eyes:'#3b2a1c',shoes:'#f5f5f5',g:'m'}
 }).forEach(([k,v])=>{if(LOOK[k])Object.assign(LOOK[k],v);});
@@ -459,9 +461,9 @@ for(const d of [{"id": "cleaner", "name": "Ms. Rosa", "look": "cleaner", "x": 6,
 Object.assign(LOOK,{rafa:{style:'short',hs:'swept',hair:'#2a1c14',skin:'#ecc9a6',eyes:'#3b2a1c',shirt:'#1a1a1f',blazer:'#a5428c',pants:'#a5428c',shoes:'#2a2a30',beard:true,camera:true,g:'m',build:1}});
 LOOK.giant=Object.assign({},LOOK.principal,{mood:'angry',tie:'#e05555'});
 QUIZ.boss={"id": "boss", "tag": "Big test", "qs": [{"en": "I take an umbrella ___ it is raining.", "es": "Llevo paraguas ___ está lloviendo.", "opts": ["because", "but", "then"], "hint": "BECAUSE = porque (da una razón)."}, {"en": "___ is your name?", "es": "¿___ es tu nombre? / ¿Cómo te llamas?", "opts": ["What", "Where", "Why"], "hint": "WHAT = qué (pregunta por cosas)."}, {"en": "I like tea, ___ I don't like coffee.", "es": "Me gusta el té, ___ no me gusta el café.", "opts": ["but", "and", "so"], "hint": "BUT = pero (contraste)."}, {"en": "___ do you live? In Santiago.", "es": "¿___ vives? En Santiago.", "opts": ["Where", "Who", "How"], "hint": "WHERE = dónde (pregunta por lugares)."}, {"en": "___ you study, you learn.", "es": "___ estudias, aprendes.", "opts": ["If", "But", "So"], "hint": "IF = si (condición)."}, {"en": "___ are you sad? Because I am tired.", "es": "¿___ estás triste? Porque estoy cansado.", "opts": ["Why", "Which", "Where"], "hint": "WHY = por qué. Se responde con BECAUSE."}, {"en": "I was tired, ___ I slept.", "es": "Estaba cansado, ___ dormí.", "opts": ["so", "but", "if"], "hint": "SO = así que (resultado)."}, {"en": "___ are you? I am fine, thanks.", "es": "¿___ estás? Estoy bien, gracias.", "opts": ["How", "Who", "What"], "hint": "HOW = cómo."}, {"en": "___ it was cold, we played outside.", "es": "___ hacía frío, jugamos afuera.", "opts": ["Although", "And", "So"], "hint": "ALTHOUGH = aunque (contraste inesperado)."}, {"en": "___ is your teacher? Teacher Seba!", "es": "¿___ es tu profesor? ¡El profe Seba!", "opts": ["Who", "Where", "Why"], "hint": "WHO = quién (pregunta por personas)."}]};QUIZ.boss.id='boss';QUIZ.final3.tag='Level 3 exam';
-for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
-  exam:d.exam==='rafa'?(n=>talkRafa(n)):d.exam==='boss'?(n=>talkBoss(n)):undefined,
-  mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.animal?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):undefined});
+for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
+  exam:d.exam==='rafa'?(n=>talkRafa(n)):d.exam==='boss'?(n=>talkBoss(n)):d.exam==='mia'?(n=>talkLostGirl(n)):undefined,
+  mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.animal?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):d.id==='mia'?(()=>save.phoneGiven?2:1):undefined});
 for(const [id,n] of Object.entries(NPCS))n.id=id;
 
 const TILE_TALK={
@@ -1334,6 +1336,26 @@ async function talkRafa(n){
   }
   await say(n,'The KEY opens a secret door in the last courtyard. Good luck, {n}!','La LLAVE abre una puerta secreta en el último patio. ¡Buena suerte, {n}!');
 }
+async function talkLostGirl(n){
+  if(save.phoneGiven){await say(n,'Thank you again for finding my phone, {n}!','¡Gracias de nuevo por encontrar mi celular, {n}!');return;}
+  if(save.phoneFound){
+    await say(n,'My phone! You found it! Thank you so much, {n}!','¡Mi celular! ¡Lo encontraste! ¡Muchas gracias, {n}!');
+    save.phoneGiven=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+    await say(n,"Let me tell you a secret to help you, as a thank you...",'Déjame contarte un secreto que te ayudará, como agradecimiento...');
+    await say(n,'At the LAST level, an English teacher will test you.','En el último nivel, un profesor de inglés te hará una prueba.');
+    await say(n,'Read the books in the Secret Library first. They have the answers!','¡Lee primero los libros de la Biblioteca Secreta! Tienen las respuestas.');
+    await say(n,'Be careful: if you make 3 mistakes in the test, it is game over!','Ten cuidado: si te equivocas 3 veces en la prueba, ¡es game over!');
+    return;
+  }
+  await say(n,'*sniff* I lost my phone... *sniff*','*sniff* Perdí mi celular... *sniff*');
+  await say(n,'I think I left it in the Computer Lab, over there.','Creo que lo dejé en el Laboratorio de Computación, por allá.');
+  await say(n,'Can you help me find it, {n}? Please!','¿Puedes ayudarme a encontrarlo, {n}? ¡Por favor!');
+}
+async function pickupPhone(){
+  save.phoneFound=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  await say(PLAYER,'A phone on the floor! It must be Mía\'s phone.','¡Un celular en el piso! Debe ser el celular de Mía.');
+  await say(PLAYER,'I should give it back to her.','Debería devolvérselo.');
+}
 async function askYesNo(spk,en,es,yes,no){
   const opts=[{t:yes,ok:true},{t:no,ok:false}];
   const ch={spk,en:fmt(en),es:fmt(es),t:0,len:Array.from(fmt(en)).length,opts,sel:0,disabled:new Set(),msg:'',shake:0};
@@ -1440,6 +1462,9 @@ async function goMap(id,x,y,dir){
 }
 function onArrive(){
   sfx.step();
+  if(cur.phoneAt&&!save.phoneFound&&player.x===cur.phoneAt.x&&player.y===cur.phoneAt.y){
+    runScript(()=>pickupPhone());return;
+  }
   const d=cur.doors.find(d=>d.x===player.x&&d.y===player.y);
   if(!d)return;
   runScript(async()=>{
@@ -1623,6 +1648,11 @@ function drawGame(c){
       c.font=F(12);c.textAlign='center';c.textBaseline='middle';c.fillText('📖',ix,by*TS-13+bob);
       c.fillStyle=GOLD;c.beginPath();c.moveTo(ix-6,by*TS-1+bob);c.lineTo(ix+6,by*TS-1+bob);c.lineTo(ix,by*TS+6+bob);c.closePath();c.fill();
     }
+  }
+  if(cur.phoneAt&&!save.phoneFound){
+    const px0=cur.phoneAt.x*TS+16,py0=cur.phoneAt.y*TS+16+Math.sin(time*5)*3;
+    c.beginPath();c.arc(px0,py0,11,0,TAU);c.fillStyle='rgba(13,22,60,.85)';c.fill();c.strokeStyle=GOLD;c.lineWidth=2;c.stroke();
+    c.font=F(14);c.textAlign='center';c.textBaseline='middle';c.fillText('📱',px0,py0+1);
   }
   const ents=cur.npcList.map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
@@ -2000,6 +2030,11 @@ function applyCode(){
   if(scene!=='settings')return;
   const v=codeEl.value.trim();codeEl.value='';
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
+  else if(v==='001'){
+    for(const lv of [1,2,3])for(const q of LV[lv])save.done[q]=true;
+    save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;
+    writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas y acceso al último nivel desbloqueados!';sfx.star();
+  }
   else if(!v){settings.ok=false;settings.msg='Escribe un código primero / Type a code first';sfx.bad();}
   else{settings.ok=false;settings.msg='Código incorrecto / Wrong code';sfx.bad();}
   try{codeEl.focus();}catch(e){}
