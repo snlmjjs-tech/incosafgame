@@ -1474,6 +1474,33 @@ function stepPlayer(dt){
   if(!player.moving){player.anim=0;const d=held[held.length-1];if(d&&canMove())tryMove(d);}
   pushTrail();
 }
+function updateNPCs(dt){
+  if(!cur||!cur.npcList)return;
+  for(const n of cur.npcList){
+    if(n.giant||n.block)continue;
+    if(n.px===undefined){n.px=n.x*TS;n.py=n.y*TS;n.tx=n.x;n.ty=n.y;n.moving=false;n.anim=0;n.hx=n.x;n.hy=n.y;n.wait=1+hash(n.x,n.y,99)*3;}
+    if(n.moving){
+      n.anim+=dt*10;
+      const gx=n.tx*TS,gy=n.ty*TS,dx=gx-n.px,dy=gy-n.py,dist=Math.hypot(dx,dy),budget=56*dt;
+      if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=1.4+Math.random()*3;}
+      else{n.px+=dx/dist*budget;n.py+=dy/dist*budget;}
+    }else{
+      n.wait-=dt;
+      if(n.wait<=0){
+        n.wait=1.4+Math.random()*3;
+        if(Math.random()<.55)for(const dname of shuffle(Object.keys(DIRS))){
+          const [dx,dy]=DIRS[dname],nx=n.x+dx,ny=n.y+dy;
+          if(Math.abs(nx-n.hx)>1||Math.abs(ny-n.hy)>1)continue;
+          if(!passable(nx,ny))continue;
+          if(player.x===nx&&player.y===ny)continue;
+          if(player.moving&&player.tx===nx&&player.ty===ny)continue;
+          if(cur.npcList.some(o=>o!==n&&o.moving&&o.tx===nx&&o.ty===ny))continue;
+          n.dir=dname;n.tx=nx;n.ty=ny;n.moving=true;break;
+        }
+      }
+    }
+  }
+}
 function facingTarget(){
   const [dx,dy]=DIRS[player.dir],x=player.x+dx,y=player.y+dy;
   const n=npcAt(x,y);if(n)return{npc:n,x,y};
@@ -1581,11 +1608,13 @@ function drawGame(c){
     c.fillRect(319,246+jt,2,8);
   }
   for(const d of cur.doors){if(d.req&&!d.req()){c.font=F(d.gate?22:15);c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff';c.fillText('🔒',d.x*TS+16,d.y*TS+(d.gate?16:18));}}
-  const ents=cur.npcList.map(n=>({y:n.y*TS,draw:()=>{
-    const px=n.x*TS,py=n.y*TS,bob=Math.sin(time*2+n.x)*.6;
+  const ents=cur.npcList.map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
+    const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
+    const bob=n.moving?Math.abs(Math.sin(n.anim))*2:Math.sin(time*2+n.x)*.6;
+    const walk=n.moving?Math.sin(n.anim*1.6):0;
     if(n.animal)drawAnimalOutlined(c,n.animal,px+16,py+TS-2,1.35,time);
     else if(n.giant)drawGiant(c,n,px+16,py+TS-1);
-    else drawPersonOutlined(c,px+16,py+TS-1,1,n.look,n.dir,bob);
+    else drawPersonOutlined(c,px+16,py+TS-1,1,n.look,n.dir,bob,true,walk);
     const mk=n.mark?n.mark():(n.quest?(save.done[n.quest]?2:1):0);
     if(mk){
       const done=mk===2;
@@ -1852,7 +1881,7 @@ function frame(now){
   }
   if(ui.banner){ui.banner.t-=dt;if(ui.banner.t<=0)ui.banner=null;}
   if(ui.photo)ui.photo.t+=dt;if(ui.death)ui.death.t+=dt;if(ui.shake>0)ui.shake=Math.max(0,ui.shake-dt);
-  if(scene==='game'){stepPlayer(dt);updateParts(dt);}
+  if(scene==='game'){stepPlayer(dt);updateNPCs(dt);updateParts(dt);}
   if(scene==='end'){endT+=dt;confetti();updateParts(dt);}
   render();
   requestAnimationFrame(frame);
