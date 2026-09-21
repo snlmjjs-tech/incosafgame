@@ -1485,6 +1485,7 @@ function updateNPCs(dt){
       if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=1.4+Math.random()*3;}
       else{n.px+=dx/dist*budget;n.py+=dy/dist*budget;}
     }else{
+      if(ui.locked)continue;
       n.wait-=dt;
       if(n.wait<=0){
         n.wait=1.4+Math.random()*3;
@@ -1615,6 +1616,14 @@ function drawGame(c){
     c.fillRect(319,246+jt,2,8);
   }
   for(const d of cur.doors){if(d.req&&!d.req()){c.font=F(d.gate?22:15);c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff';c.fillText('🔒',d.x*TS+16,d.y*TS+(d.gate?16:18));}}
+  if(cur.books){
+    for(const k in cur.books){
+      const [bx,by]=k.split(',').map(Number),ix=bx*TS+16,bob=Math.sin(time*5)*3;
+      c.beginPath();c.arc(ix,by*TS-14+bob,10,0,TAU);c.fillStyle=GOLD;c.fill();c.strokeStyle='#fff';c.lineWidth=1.6;c.stroke();
+      c.font=F(12);c.textAlign='center';c.textBaseline='middle';c.fillText('📖',ix,by*TS-13+bob);
+      c.fillStyle=GOLD;c.beginPath();c.moveTo(ix-6,by*TS-1+bob);c.lineTo(ix+6,by*TS-1+bob);c.lineTo(ix,by*TS+6+bob);c.closePath();c.fill();
+    }
+  }
   const ents=cur.npcList.map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
     const bob=n.moving?Math.abs(Math.sin(n.anim))*2:Math.sin(time*2+n.x)*.6;
