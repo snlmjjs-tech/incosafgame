@@ -111,7 +111,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',avatar:0,seen2:false,seen3:false,seenF:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,vitokoAsked:false,dogFound:false,dogGiven:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -303,15 +303,20 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.garden.doors.push({x:19,y:7,to:'plaza',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final2,
     msg:()=>['The Plaza gate is locked! I must pass the Level 2 exam first.','¡El portón de la plaza está cerrado! Primero debo aprobar el examen del Nivel 2.']});
   MAPS.plaza.doors.push({x:0,y:7,to:'garden',tx:18,ty:7,dir:'left',gate:true});
-  Object.assign(MAPS,{"final": {"id": "final", "name": "Last Courtyard", "es": "El último patio", "floor": "cobble", "wall": "#2a1450", "facade": "#d9c8f0", "roof": true, "theme": 4, "dusk": "rgba(30,10,80,.30)", "rows": ["####################", "WWWWWWWWWWWWWWWWWWWW", "WWWWWdWWWWWWWWdWWWWW", "HGGGccccccccccccGGGH", "HGKGcccJccccJcccGKGH", "HGGGccccccccccccGGGH", "HcccccNccccccNcccccH", "gccccccccOOccccccccH", "HccccccccOOccccccccH", "HcccccNccccccNcccccH", "HGGGcccJccccJcccGGGH", "HGKGccccccccccccGKGH", "HGGGcccccXXcccccGGGH", "HccccccccccccccccccH", "HHHHHHHHHHHHHHHHHHHH"], "doors": [{"x": 5, "y": 2, "to": "books", "tx": 9, "ty": 13, "dir": "up", "label": "SECRET LIBRARY"}, {"x": 14, "y": 2, "to": "boss", "tx": 9, "ty": 13, "dir": "up", "label": "DANGER!"}], "npcs": [], "tileTalk": {"O": [["A dark fountain. The night is quiet... too quiet.", "Una fuente oscura. La noche está tranquila... demasiado tranquila."]]}}, "books": {"id": "books", "name": "Secret Library", "es": "La biblioteca secreta", "floor": "brown", "wall": "#463c96", "theme": 4, "dusk": "rgba(40,20,90,.22)", "rows": ["####################", "#bbbbbbbbbbbbbbbbbb#", "#P................P#", "#..................#", "#b................b#", "#b......RRRR......b#", "#b....V.RRRR.V....b#", "#b......RRRR......b#", "#b......RRRR......b#", "#..................#", "#...TT........TT...#", "#..................#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 5, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": [], "books": {"6,6": "conn", "13,6": "wh"}, "tileTalk": {"V": [["", ""]]}}, "boss": {"id": "boss", "name": "Secret Room", "es": "La sala secreta", "floor": "brown", "wall": "#3a0d0d", "theme": 5, "dusk": "rgba(150,0,0,.20)", "pulse": true, "rows": ["####################", "#WWWWWWWWWWWWWWWWWW#", "#P................P#", "#..................#", "#..................#", "#..................#", "#..................#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 14, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": ["boss"]}});
+  Object.assign(MAPS,{"final": {"id": "final", "name": "Last Courtyard", "es": "El último patio (Nivel 5)", "floor": "cobble", "wall": "#2a1450", "facade": "#d9c8f0", "roof": true, "theme": 4, "dusk": "rgba(30,10,80,.30)", "rows": ["####################", "WWWWWWWWWWWWWWWWWWWW", "WWWWWdWWWWWWWWdWWWWW", "HGGGccccccccccccGGGH", "HGKGcccJccccJcccGKGH", "HGGGccccccccccccGGGH", "HcccccNccccccNcccccH", "gccccccccOOccccccccH", "HccccccccOOccccccccH", "HcccccNccccccNcccccH", "HGGGcccJccccJcccGGGH", "HGKGccccccccccccGKGH", "HGGGcccccXXcccccGGGH", "HccccccccccccccccccH", "HHHHHHHHHHHHHHHHHHHH"], "doors": [{"x": 5, "y": 2, "to": "books", "tx": 9, "ty": 13, "dir": "up", "label": "SECRET LIBRARY"}, {"x": 14, "y": 2, "to": "boss", "tx": 9, "ty": 13, "dir": "up", "label": "DANGER!"}], "npcs": [], "tileTalk": {"O": [["A dark fountain. The night is quiet... too quiet.", "Una fuente oscura. La noche está tranquila... demasiado tranquila."]]}}, "books": {"id": "books", "name": "Secret Library", "es": "La biblioteca secreta", "floor": "brown", "wall": "#463c96", "theme": 4, "dusk": "rgba(40,20,90,.22)", "rows": ["####################", "#bbbbbbbbbbbbbbbbbb#", "#P................P#", "#..................#", "#b................b#", "#b......RRRR......b#", "#b....V.RRRR.V....b#", "#b......RRRR......b#", "#b......RRRR......b#", "#..................#", "#...TT........TT...#", "#..................#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 5, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": [], "books": {"6,6": "conn", "13,6": "wh"}, "tileTalk": {"V": [["", ""]]}}, "boss": {"id": "boss", "name": "Secret Room", "es": "La sala secreta", "floor": "brown", "wall": "#3a0d0d", "theme": 5, "dusk": "rgba(150,0,0,.20)", "pulse": true, "rows": ["####################", "#WWWWWWWWWWWWWWWWWW#", "#P................P#", "#..................#", "#..................#", "#..................#", "#..................#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 14, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": ["boss"]}});
   MAPS.plaza.rows[7]=MAPS.plaza.rows[7].slice(0,19)+'g';
-  MAPS.plaza.doors.push({x:19,y:7,to:'final',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final3,
+  MAPS.plaza.doors.push({x:19,y:7,to:'level4',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final3,
     msg:()=>['The last gate is locked! I must pass the Level 3 exam first.','¡El último portón está cerrado! Primero debo aprobar el examen del Nivel 3.']});
-  MAPS.final.doors.push({x:0,y:7,to:'plaza',tx:18,ty:7,dir:'left',gate:true});
+  Object.assign(MAPS,{"level4":{"id":"level4","name":"Level 4 Courtyard","es":"El patio del Nivel 4","floor":"cobble","wall":"#14204f","facade":"#efdfa6","roof":true,"theme":4,"rows":["####################","WWWWWWWWWWWWWWWWWWWW","WWWWWWWWWWWWWWWWWWWW","HGGGccccccccccccGGGH","HGKGcccJccccJcccGKGH","HGGGccccccccccccGGGH","HcccccNccccccNcccccH","gccccccccOOccccccccH","HccccccccOOccccccccH","HcccccNccccccNcccccH","HGGGcccJccccJcccGGGH","HGKGccccccccccccGKGH","HGGGcccccXXcccccGGGH","HccccccccccccccccccH","HHHHHHHHHHHHHHHHHHHH"],"doors":[],"npcs":["vitoko","gateguard"],"tileTalk":{"O":[["A shiny fountain. Almost there!","Una fuente brillante. ¡Ya casi llegamos!"]]}}});
+  MAPS.level4.rows[7]=MAPS.level4.rows[7].slice(0,19)+'g';
+  MAPS.level4.doors.push({x:0,y:7,to:'plaza',tx:18,ty:7,dir:'left',gate:true});
+  MAPS.level4.doors.push({x:19,y:7,to:'final',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.bottleGiven,
+    msg:()=>['The guard is thirsty! I need to bring him a water bottle from the Plaza kiosk.','¡El guardia tiene sed! Necesito traerle una botella de agua del kiosko de la plaza.']});
+  MAPS.final.doors.push({x:0,y:7,to:'level4',tx:18,ty:7,dir:'left',gate:true});
   MAPS.final.doors[0].req=()=>save.key;
   MAPS.final.doors[0].msg=()=>['This door is locked! I need the KEY from Tío Rafa.','¡Esta puerta está cerrada! Necesito la LLAVE del Tío Rafa.'];
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');
-  MAPS.plaza.npcs.push('mia');MAPS.computer.phoneAt={x:10,y:9};
+  MAPS.plaza.npcs.push('mia','kiosco');MAPS.computer.phoneAt={x:10,y:9};
   for(const m of Object.values(MAPS))if(!m.theme)m.theme=1;
 }
 for(const m of Object.values(MAPS)){
@@ -355,6 +360,9 @@ const LOOK={
  nico:{skin:'#f0c8a0',hair:'#7a3b1e',shirt:'#3498db',pants:'#20306b',style:'short'},
  vale:{skin:'#e2b38a',hair:'#1f1a17',shirt:'#222222',pants:'#556677',style:'cap',cap:'#e74c3c'},
  mia:{skin:'#f2c9a0',hair:'#6b3a22',shirt:'#ff6f91',pants:'#3a3d73'},
+ vitoko:{skin:'#e8b98f',hair:'#2a2a2a',shirt:'#3dae5a',pants:'#2b2b3a',style:'spiky'},
+ gateguard:{skin:'#c68b5b',hair:'#1a1a1a',shirt:'#14204f',pants:'#0f1838',style:'cap',cap:'#f7c600'},
+ kiosco:{skin:'#e0ac7e',hair:'#5a3a20',shirt:'#3d8b4d',pants:'#333333',style:'cap',cap:'#ffffff'},
  architect:{skin:'#d9a577',hair:'#3a2417',shirt:'#e67e22',pants:'#3d4a5c',style:'cap',cap:'#f5c518',glasses:true},
  techie:{skin:'#f0c8a0',hair:'#111111',shirt:'#6c5ce7',pants:'#2b2b3a',style:'long',glasses:true},
  teacher_m:{skin:'#f0cfa8',hair:'#9a9aa4',shirt:'#e8e8e8',pants:'#2b3550',style:'short',glasses:true,tie:'#c0392b'},
@@ -368,6 +376,7 @@ Object.entries({
  pupil7:{hs:'bun',bt:'skirt',shoes:'#ff8fb1'},pupil8:{bt:'shorts',shoes:'#5cb85c'},sofia:{bt:'skirt',eyes:'#2e9a6b',shoes:'#ffffff'},artist:{bt:'skirt',eyes:'#8e44ad',shoes:'#f0a030'},
  vice:{bt:'skirt',shoes:'#333'},scientist:{eyes:'#6b4a2b'},nico:{hs:'spiky',eyes:'#2e86de',shoes:'#e05555'},techie:{hs:'bob',eyes:'#8e44ad',shoes:'#ffffff'},
  historian:{bt:'skirt',shoes:'#5a4630'},vale:{shoes:'#e74c3c'},coach:{shoes:'#ffffff'},mia:{hs:'pigtails',bt:'skirt',eyes:'#3b2a1c',shoes:'#ff9fc0'},
+ vitoko:{hs:'spiky',bt:'shorts',shoes:'#e05555'},gateguard:{eyes:'#3b2a1c',shoes:'#2b2d3a'},kiosco:{eyes:'#6b4a2b',shoes:'#ffffff'},
  guard:{style:'short',hs:'short',hair:'#0f0d0c',cap:null,skin:'#e2b38a',eyes:'#3b2a1c',shoes:'#2b2d3a'},
  principal:{style:'short',hs:'pompadour',hair:'#0f0d0c',glasses:'bold',skin:'#f0cfa8',shirt:'#14204f',pants:'#1c2340',tie:'#f7c600',eyes:'#3b2a1c',shoes:'#f5f5f5',g:'m'}
 }).forEach(([k,v])=>{if(LOOK[k])Object.assign(LOOK[k],v);});
@@ -461,9 +470,9 @@ for(const d of [{"id": "cleaner", "name": "Ms. Rosa", "look": "cleaner", "x": 6,
 Object.assign(LOOK,{rafa:{style:'short',hs:'swept',hair:'#2a1c14',skin:'#ecc9a6',eyes:'#3b2a1c',shirt:'#1a1a1f',blazer:'#a5428c',pants:'#a5428c',shoes:'#2a2a30',beard:true,camera:true,g:'m',build:1}});
 LOOK.giant=Object.assign({},LOOK.principal,{mood:'angry',tie:'#e05555'});
 QUIZ.boss={"id": "boss", "tag": "Big test", "qs": [{"en": "I take an umbrella ___ it is raining.", "es": "Llevo paraguas ___ está lloviendo.", "opts": ["because", "but", "then"], "hint": "BECAUSE = porque (da una razón)."}, {"en": "___ is your name?", "es": "¿___ es tu nombre? / ¿Cómo te llamas?", "opts": ["What", "Where", "Why"], "hint": "WHAT = qué (pregunta por cosas)."}, {"en": "I like tea, ___ I don't like coffee.", "es": "Me gusta el té, ___ no me gusta el café.", "opts": ["but", "and", "so"], "hint": "BUT = pero (contraste)."}, {"en": "___ do you live? In Santiago.", "es": "¿___ vives? En Santiago.", "opts": ["Where", "Who", "How"], "hint": "WHERE = dónde (pregunta por lugares)."}, {"en": "___ you study, you learn.", "es": "___ estudias, aprendes.", "opts": ["If", "But", "So"], "hint": "IF = si (condición)."}, {"en": "___ are you sad? Because I am tired.", "es": "¿___ estás triste? Porque estoy cansado.", "opts": ["Why", "Which", "Where"], "hint": "WHY = por qué. Se responde con BECAUSE."}, {"en": "I was tired, ___ I slept.", "es": "Estaba cansado, ___ dormí.", "opts": ["so", "but", "if"], "hint": "SO = así que (resultado)."}, {"en": "___ are you? I am fine, thanks.", "es": "¿___ estás? Estoy bien, gracias.", "opts": ["How", "Who", "What"], "hint": "HOW = cómo."}, {"en": "___ it was cold, we played outside.", "es": "___ hacía frío, jugamos afuera.", "opts": ["Although", "And", "So"], "hint": "ALTHOUGH = aunque (contraste inesperado)."}, {"en": "___ is your teacher? Teacher Seba!", "es": "¿___ es tu profesor? ¡El profe Seba!", "opts": ["Who", "Where", "Why"], "hint": "WHO = quién (pregunta por personas)."}]};QUIZ.boss.id='boss';QUIZ.final3.tag='Level 3 exam';
-for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
-  exam:d.exam==='rafa'?(n=>talkRafa(n)):d.exam==='boss'?(n=>talkBoss(n)):d.exam==='mia'?(n=>talkLostGirl(n)):undefined,
-  mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.animal?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):d.id==='mia'?(()=>save.phoneGiven?2:1):undefined});
+for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}, {"id": "vitoko", "name": "Vitoko", "look": "vitoko", "x": 9, "y": 9, "dir": "down", "exam": "vitoko"}, {"id": "gateguard", "name": "Guardia", "look": "gateguard", "x": 17, "y": 7, "dir": "left", "exam": "gateguard"}, {"id": "kiosco", "name": "Don Beto", "look": "kiosco", "x": 14, "y": 4, "dir": "down", "exam": "kiosco"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
+  exam:d.exam==='rafa'?(n=>talkRafa(n)):d.exam==='boss'?(n=>talkBoss(n)):d.exam==='mia'?(n=>talkLostGirl(n)):d.exam==='vitoko'?(n=>talkVitoko(n)):d.exam==='gateguard'?(n=>talkGateGuard(n)):d.exam==='kiosco'?(n=>talkKiosk(n)):undefined,
+  mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.animal?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):d.id==='mia'?(()=>save.phoneGiven?2:1):d.id==='vitoko'?(()=>save.dogGiven?2:1):d.id==='gateguard'?(()=>save.bottleGiven?2:1):d.id==='kiosco'?(()=>save.bottle?2:1):undefined});
 for(const [id,n] of Object.entries(NPCS))n.id=id;
 
 const TILE_TALK={
@@ -1057,11 +1066,11 @@ function resetTrail(){
 function pushTrail(){
   const l=trail[trail.length-1];if(!l){resetTrail();return;}
   if(Math.hypot(player.px-l.x,player.py-l.y)>=2)trail.push({x:player.px,y:player.py});
-  if(trail.length>90)trail.shift();
+  if(trail.length>140)trail.shift();
 }
-function followerPos(){
+function followerPos(need=30){
   if(!trail.length)return{x:player.px,y:player.py,dx:0};
-  let need=30,i=trail.length-1;
+  let i=trail.length-1;
   while(i>0){const b=trail[i],a=trail[i-1],d=Math.hypot(b.x-a.x,b.y-a.y);if(d>=need&&d>0){const t=need/d;return{x:b.x+(a.x-b.x)*t,y:b.y+(a.y-b.y)*t,dx:b.x-a.x};}need-=d;i--;}
   const f=trail[0];return{x:f.x,y:f.y,dx:player.px-f.x};
 }
@@ -1099,6 +1108,11 @@ function drawFollower(c){
   const h=38,w=h*mAR();
   if(mascotOK())drawImageOutlined(c,mascot,bx,by-bob,w,h,followerFlip);
   else{c.fillStyle=NAVY;c.beginPath();c.arc(bx,by-bob-18,14,0,TAU);c.fill();}
+}
+function drawDogFollower(c){
+  if(!save.dogFound||save.dogGiven)return;
+  const f=followerPos(58),bx=f.x+TS/2,by=f.y+TS-1;
+  drawAnimalOutlined(c,'dog',bx,by,1,time);
 }
 let _aOutC=null,_aOutS=null;
 function drawAnimalOutlined(c,kind,cx,fy,s,t){
@@ -1253,11 +1267,15 @@ const DONE_MSG={1:['I have all 6 stars! The Auditorium is open!','¡Tengo las 6 
  2:['I have all 6 stars! I must see the Vice Principal in the Garden!','¡Tengo las 6 estrellas! ¡Debo ver a la vicedirectora en el jardín!'],
  3:['I have all 6 stars! Teacher Seba is waiting in the Auditorium!','¡Tengo las 6 estrellas! ¡El profe Seba me espera en el auditorio!']};
 async function awardStar(){
-  burst(player.px+16,player.py+10);sfx.star();ui.banner={text:`⭐ ${curStars()} / 6`,t:2.4};writeSave();
+  save.money=(save.money||0)+1;
+  burst(player.px+16,player.py+10);sfx.star();ui.banner={text:`⭐ ${curStars()} / 6   💰 +$1`,t:2.4};writeSave();
 }
 async function talkNPC(n){
   n.dir=OPP[player.dir];
-  if(n.animal)return takePhoto(n);
+  if(n.animal){
+    if(n.id==='dog'&&save.vitokoAsked&&!save.dogFound&&!save.dogGiven)return fetchDog(n);
+    return takePhoto(n);
+  }
   if(n.exam)return n.exam(n);
   const lines=n.talk?n.talk():null;
   if(lines){for(const l of lines)await say(n,l[0],l[1]);return;}
@@ -1282,7 +1300,7 @@ async function talkPrincipal(n){
     await say(n,'This is your Level 1 exam. You can do it!','Este es tu examen del Nivel 1. ¡Tú puedes!');
     await runQuiz(n,QUIZ.final);
     await say(n,'Congratulations, {n}! Level 1 is complete!','¡Felicitaciones, {n}! ¡Nivel 1 completo!');
-    save.final1=true;save.level=2;writeSave();
+    save.final1=true;save.level=2;save.money=(save.money||0)+1;writeSave();
     await levelUp(1);return;
   }
   if((save.level>=3&&starsOf(3)>=6)||state.cheat){
@@ -1290,7 +1308,7 @@ async function talkPrincipal(n){
     await say(n,'This is your Level 3 exam. You can do it!','Este es tu examen del Nivel 3. ¡Tú puedes!');
     await runQuiz(n,QUIZ.final3);
     await say(n,'Congratulations, {n}! Level 3 is complete!','¡Felicitaciones, {n}! ¡Nivel 3 completo!');
-    save.final3=true;save.level=4;writeSave();await levelUp(3);return;
+    save.final3=true;save.level=4;save.money=(save.money||0)+1;writeSave();await levelUp(3);return;
   }
   if(save.level>=3){
     await say(n,'Come back with 6 stars from Level 3 for your Level 3 exam.','Vuelve con las 6 estrellas del Nivel 3 para tu examen del Nivel 3.');
@@ -1309,7 +1327,7 @@ async function talkVice(n){
   await say(n,'It is time for the Level 2 exam. You can do it!','Es hora del examen del Nivel 2. ¡Tú puedes!');
   await runQuiz(n,QUIZ.final2);
   await say(n,'Congratulations, {n}! Level 2 is complete!','¡Felicitaciones, {n}! ¡Nivel 2 completo!');
-  save.final2=true;save.level=3;writeSave();
+  save.final2=true;save.level=3;save.money=(save.money||0)+1;writeSave();
   await levelUp(2);
 }
 function certScene(kind){
@@ -1382,6 +1400,44 @@ async function pickupPhone(){
   save.phoneFound=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
   await say(PLAYER,'A phone on the floor! It must be Mía\'s phone.','¡Un celular en el piso! Debe ser el celular de Mía.');
   await say(PLAYER,'I should give it back to her.','Debería devolvérselo.');
+}
+async function talkVitoko(n){
+  if(save.dogGiven){await say(n,'Thank you again for bringing back my dog, {n}!','¡Gracias de nuevo por traer a mi perro, {n}!');return;}
+  if(save.dogFound){
+    await say(n,'My dog! You found him! Thank you so much, {n}!','¡Mi perro! ¡Lo encontraste! ¡Muchas gracias, {n}!');
+    save.dogGiven=true;save.money=(save.money||0)+5;writeSave();sfx.star();burst(player.px+16,player.py+10);
+    await say(n,'Here, $5 for you as a thank you!','¡Toma, $5 para ti como agradecimiento!');
+    return;
+  }
+  save.vitokoAsked=true;writeSave();
+  await say(n,'*sniff* I lost my dog...','*sniff* Perdí a mi perro...');
+  await say(n,'I think he ran to the Patio, at the entrance of the school!','¡Creo que corrió al patio, en la entrada del colegio!');
+  await say(n,'Can you bring him back, {n}? Please!','¿Puedes traerlo de vuelta, {n}? ¡Por favor!');
+}
+async function fetchDog(n){
+  save.dogFound=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  const idx=cur.npcList.indexOf(n);if(idx>=0)cur.npcList.splice(idx,1);
+  await say(PLAYER,"Hey, it's Vitoko's dog! Come with me, boy!",'¡Oye, es el perro de Vitoko! ¡Ven conmigo!');
+}
+async function talkKiosk(n){
+  if(save.bottle){await say(n,'You already have a water bottle. Good luck!','Ya tienes una botella de agua. ¡Buena suerte!');return;}
+  await say(n,'Water bottle: $10. Stay hydrated on your journey!','Botella de agua: $10. ¡Mantente hidratado en tu viaje!');
+  const yes=await askYesNo(n,'Do you want to buy it?','¿Quieres comprarla?','Yes! / ¡Sí!','Not now / Ahora no');
+  if(!yes){await say(n,'Okay, come back when you are ready.','Ok, vuelve cuando estés listo.');return;}
+  if((save.money||0)<10){await say(n,'You need $10. Come back later!','Necesitas $10. ¡Vuelve más tarde!');return;}
+  save.money-=10;save.bottle=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  await say(n,'Here is your water bottle!','¡Aquí está tu botella de agua!');
+}
+async function talkGateGuard(n){
+  if(save.bottleGiven){await say(n,'Thanks again for the water! Go ahead.','¡Gracias de nuevo por el agua! Adelante.');return;}
+  if(save.bottle){
+    await say(n,"A water bottle! Thank you, I was so thirsty!",'¡Una botella de agua! Gracias, ¡tenía tanta sed!');
+    save.bottle=false;save.bottleGiven=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+    await say(n,'You may pass to the last courtyard. Good luck!','Puedes pasar al último patio. ¡Buena suerte!');
+    return;
+  }
+  await say(n,"I'm so thirsty! I won't let anyone pass without a water bottle.",'¡Tengo tanta sed! No dejaré pasar a nadie sin una botella de agua.');
+  await say(n,'You can buy one at the kiosk in the Plaza. It costs $10.','Puedes comprar una en el kiosko de la plaza. Cuesta $10.');
 }
 async function askYesNo(spk,en,es,yes,no){
   const opts=[{t:yes,ok:true},{t:no,ok:false}];
@@ -1463,7 +1519,7 @@ async function runScript(fn){
 /* ---------- mundo ---------- */
 function setMap(id){
   cur=MAPS[id];if(!cur.layer)buildLayer(cur);
-  cur.npcList=(cur.npcs||[]).map(k=>NPCS[k]);
+  cur.npcList=(cur.npcs||[]).filter(k=>!(k==='dog'&&save.dogFound)).map(k=>NPCS[k]);
 }
 const npcAt=(x,y)=>cur.npcList.find(n=>(n.x===x&&n.y===y)||(n.block&&n.block.some(b=>n.x+b[0]===x&&n.y+b[1]===y)));
 function passable(x,y){
@@ -1482,8 +1538,12 @@ async function goMap(id,x,y,dir){
   if(id==='plaza'&&!save.seen3){save.seen3=true;writeSave();
     await say(MASCOT,'Welcome to Level 3: the Plaza!','¡Bienvenido al Nivel 3: la Plaza!');
     await say(MASCOT,'Time, routines and more. Find 6 stars!','La hora, las rutinas y más. ¡Consigue 6 estrellas!');}
+  if(id==='level4'&&!save.seen4){save.seen4=true;writeSave();
+    await say(MASCOT,'Welcome to Level 4!','¡Bienvenido al Nivel 4!');
+    await say(MASCOT,'A guard is blocking the way east. He looks thirsty...','Un guardia bloquea el camino al este. Se ve sediento...');
+    await say(MASCOT,'Maybe the kiosk back in the Plaza can help. And someone here needs YOUR help too!','Tal vez el kiosko de la Plaza pueda ayudar. ¡Y alguien aquí también necesita TU ayuda!');}
   if(id==='final'&&!save.seenF){save.seenF=true;writeSave();
-    await say(MASCOT,'Welcome to the LAST courtyard!','¡Bienvenido al ÚLTIMO patio!');
+    await say(MASCOT,'Welcome to Level 5: the LAST courtyard!','¡Bienvenido al Nivel 5: el ÚLTIMO patio!');
     await say(MASCOT,'Two secret rooms... One door is locked. Tío Rafa\'s KEY can open it!','Dos salas secretas... Una puerta está cerrada. ¡La LLAVE del Tío Rafa puede abrirla!');
     await say(MASCOT,'And I hear a very LOUD voice in the other room...','Y escucho una voz muy FUERTE en la otra sala...');}
 }
@@ -1643,7 +1703,8 @@ function drawHUD(c){
   c.save();
   mvWindow(c,8,8,196,30,15,{gems:false});
   for(let i=0;i<6;i++){starPath(c,28+i*24,23,9);c.fillStyle=i<curStars()?GOLD:'rgba(255,255,255,.18)';c.fill();c.strokeStyle=i<curStars()?'#fff3a8':'rgba(255,255,255,.35)';c.lineWidth=1;c.stroke();}
-  c.font=F(12,'bold');c.textAlign='center';c.textBaseline='middle';c.fillStyle=GOLD;c.fillText('LV '+Math.min(4,save.level||1),180,23.5);
+  c.font=F(12,'bold');c.textAlign='center';c.textBaseline='middle';c.fillStyle=GOLD;c.fillText('LV '+Math.min(5,save.level||1),180,23.5);
+  {const mtxt='💰 $'+(save.money||0),mw=c.measureText(mtxt).width+20;mvWindow(c,8,42,mw,22,11,{gems:false});c.font=F(12,'bold');c.fillStyle=GOLD;c.textAlign='left';c.textBaseline='middle';c.fillText(mtxt,18,53);}
   c.font=F(13,'bold');const lab=`${cur.name} · ${cur.es}`,w=c.measureText(lab).width+26;
   mvWindow(c,CW/2-w/2+40,8,w,26,13,{gems:false});
   c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(lab,CW/2+40,21.5);
@@ -1697,6 +1758,7 @@ function drawGame(c){
     }}}));
   ents.push({y:player.py,draw:()=>drawPlayer(c)});
   ents.push({y:followerPos().y,draw:()=>drawFollower(c)});
+  if(save.dogFound&&!save.dogGiven)ents.push({y:followerPos(58).y,draw:()=>drawDogFollower(c)});
   ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
   if(cur.dusk){c.save();if(cur.pulse)c.globalAlpha=.65+.35*Math.sin(time*3);c.fillStyle=cur.dusk;c.fillRect(0,0,CW,CH);c.restore();}
   if(ui.mode==='play'&&!ui.locked&&!player.moving){
@@ -1981,6 +2043,8 @@ const PAL={
  shoes:['#ffffff','#2b2d3a','#e05555','#3e8ed0','#f0a030','#5cb85c','#ff8fb1','#9b6fd6']
 };
 const HAIRS=[['pompadour','Jopo','Pompadour'],['short','Corto','Short'],['spiky','Puntas','Spiky'],['buzz','Rapado','Buzz'],['curly','Rizado','Curly'],['long','Largo','Long'],['bob','Melena','Bob'],['ponytail','Cola','Ponytail'],['pigtails','Chapitas','Pigtails'],['bun','Moño','Bun']];
+const HAIRS_F=['long','bob','ponytail','pigtails','bun'];
+const hairsFor=g=>HAIRS.map(h=>h[0]).filter(h=>g==='f'?HAIRS_F.includes(h):!HAIRS_F.includes(h));
 const BOTS=[['long','Largo','Long'],['shorts','Short','Shorts'],['skirt','Falda','Skirt']];
 const BUILDS=[['Delgado','Slim'],['Normal','Normal'],['Fuerte','Strong']];
 const ROWS=[
@@ -1999,12 +2063,12 @@ function defaultLook(g){return g==='f'
   ?{g:'f',hs:'ponytail',hair:'#6b4226',eyes:'#3b2a1c',skin:'#f2c9a0',build:1,shirt:'#ff8fb1',bt:'skirt',pants:'#1c2a5e',shoes:'#ffffff'}
   :{g:'m',hs:'short',hair:'#3a2417',eyes:'#3b2a1c',skin:'#f2c9a0',build:1,shirt:'#f4f4f4',bt:'long',pants:'#1c2a5e',shoes:'#ffffff'};}
 function presetLook(i){const L=normLook(LOOK[AV[i].key]);return {g:L.g,hs:L.hs,hair:L.hair,eyes:L.eyes,skin:L.skin,build:1,shirt:L.shirt,bt:L.bt,pants:L.pants,shoes:'#ffffff'};}
-function cycleRow(i,dir){const R=ROWS[i],L=setup.look;let k=R.vals.indexOf(L[R.key]);if(k<0)k=0;k=(k+dir+R.vals.length)%R.vals.length;L[R.key]=R.vals[k];setup.row=i;sfx.pick();}
+function cycleRow(i,dir){const R=ROWS[i],L=setup.look;const vals=R.key==='hs'?hairsFor(L.g):R.vals;let k=vals.indexOf(L[R.key]);if(k<0)k=0;k=(k+dir+vals.length)%vals.length;L[R.key]=vals[k];setup.row=i;sfx.pick();}
 function setRow(i,v){setup.look[ROWS[i].key]=v;setup.row=i;sfx.pick();}
 function rotateLook(){setup.rot=(setup.rot+1)%4;sfx.pick();}
 function randomLook(){
   const L=setup.look;
-  for(const R of ROWS){const vals=(R.key==='bt'&&L.g==='m')?R.vals.slice(0,2):R.vals;L[R.key]=vals[Math.floor(Math.random()*vals.length)];}
+  for(const R of ROWS){const vals=R.key==='hs'?hairsFor(L.g):(R.key==='bt'&&L.g==='m')?R.vals.slice(0,2):R.vals;L[R.key]=vals[Math.floor(Math.random()*vals.length)];}
   sfx.star();
 }
 function finishName(){
@@ -2042,8 +2106,8 @@ function toggleVoice(){state.voice=!state.voice;if(!state.voice&&'speechSynthesi
 function toggleMusic(){state.music=!state.music;savePrefs();}
 function speakCurrent(){const d=ui.mode==='say'?ui.dlg:ui.mode==='choose'?ui.choice:null;if(d){if(!state.voice)state.voice=true;speak(d.en);}}
 const settings={msg:'',ok:false};
-const MAPLIST=[['patio','Patio'],['class','Sala'],['library','Biblioteca'],['cafe','Cafetería'],['hall','Auditorio'],['garden','Jardín'],['gym','Gimnasio'],['lab','Laboratorio'],['art','Arte'],['music','Música'],['plaza','Plaza'],['computer','Computación'],['teachers','Profesores'],['final','Patio final'],['books','Biblioteca sec.'],['boss','Sala de Seba']];
-const ARR={patio:[9,12,'up'],garden:[2,7,'right'],plaza:[2,7,'right'],final:[2,7,'right']};
+const MAPLIST=[['patio','Patio'],['class','Sala'],['library','Biblioteca'],['cafe','Cafetería'],['hall','Auditorio'],['garden','Jardín'],['gym','Gimnasio'],['lab','Laboratorio'],['art','Arte'],['music','Música'],['plaza','Plaza'],['computer','Computación'],['teachers','Profesores'],['level4','Nivel 4'],['final','Patio final'],['books','Biblioteca sec.'],['boss','Sala de Seba']];
+const ARR={patio:[9,12,'up'],garden:[2,7,'right'],plaza:[2,7,'right'],level4:[2,7,'right'],final:[2,7,'right']};
 function openSettings(){
   if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3)return;
   held.length=0;scene='settings';settings.msg=state.cheat?'🔓 Modo revisión ACTIVADO':'';settings.ok=true;
@@ -2059,8 +2123,8 @@ function applyCode(){
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
   else if(v==='001'){
     for(const lv of [1,2,3])for(const q of LV[lv])save.done[q]=true;
-    save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;
-    writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas y acceso al último nivel desbloqueados!';sfx.star();
+    save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;save.money=(save.money||0)+30;
+    writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas, $30 y acceso al último nivel desbloqueados!';sfx.star();
   }
   else if(!v){settings.ok=false;settings.msg='Escribe un código primero / Type a code first';sfx.bad();}
   else{settings.ok=false;settings.msg='Código incorrecto / Wrong code';sfx.bad();}
