@@ -307,7 +307,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.plaza.rows[7]=MAPS.plaza.rows[7].slice(0,19)+'g';
   MAPS.plaza.doors.push({x:19,y:7,to:'level4',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final3,
     msg:()=>['The last gate is locked! I must pass the Level 3 exam first.','¡El último portón está cerrado! Primero debo aprobar el examen del Nivel 3.']});
-  Object.assign(MAPS,{"level4":{"id":"level4","name":"Level 4 Courtyard","es":"El patio del Nivel 4","floor":"cobble","wall":"#14204f","facade":"#efdfa6","roof":true,"theme":4,"rows":["####################","WWWWWWWWWWWWWWWWWWWW","WWWWWWWWWWWWWWWWWWWW","HGGGccccccccccccGGGH","HGKGcccJccccJcccGKGH","HGGGccccccccccccGGGH","HcccccNccccccNcccccH","gccccccccOOccccccccH","HccccccccOOccccccccH","HcccccNccccccNcccccH","HGGGcccJccccJcccGGGH","HGKGccccccccccccGKGH","HGGGcccccXXcccccGGGH","HccccccccccccccccccH","HHHHHHHHHHHHHHHHHHHH"],"doors":[],"npcs":["vitoko","gateguard"],"tileTalk":{"O":[["A shiny fountain. Almost there!","Una fuente brillante. ¡Ya casi llegamos!"]]}}});
+  Object.assign(MAPS,{"level4":{"id":"level4","name":"Level 4 Courtyard","es":"El patio del Nivel 4","floor":"cobble","wall":"#14204f","facade":"#efdfa6","roof":true,"theme":4,"rows":["####################","WWWWWWWWWWWWWWWWWWWW","WWWWWWWWWWWWWWWWWWWW","HGGGccccccccccccGGGH","HGKGcccJccccJcccGKGH","HGGGccccccccccccGGGH","HcccccNccccccNcccccH","gccccccccOOccccccccH","HccccccccOOccccccccH","HcccccNccccccNcccccH","HGGGcccJccccJcccGGGH","HGKGccccccccccccGKGH","HGGGcccccXXcccccGGGH","HccccccccccccccccccH","HHHHHHHHHHHHHHHHHHHH"],"doors":[],"npcs":["gateguard"],"tileTalk":{"O":[["A shiny fountain. Almost there!","Una fuente brillante. ¡Ya casi llegamos!"]]}}});
   MAPS.level4.rows[7]=MAPS.level4.rows[7].slice(0,19)+'g';
   MAPS.level4.doors.push({x:0,y:7,to:'plaza',tx:18,ty:7,dir:'left',gate:true});
   MAPS.level4.doors.push({x:19,y:7,to:'final',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.bottleGiven,
@@ -316,7 +316,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.final.doors[0].req=()=>save.key;
   MAPS.final.doors[0].msg=()=>['This door is locked! I need the KEY from Tío Rafa.','¡Esta puerta está cerrada! Necesito la LLAVE del Tío Rafa.'];
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');
-  MAPS.plaza.npcs.push('mia','kiosco');MAPS.computer.phoneAt={x:10,y:9};
+  MAPS.plaza.npcs.push('mia','kiosco','vitoko');MAPS.computer.phoneAt={x:10,y:9};
   for(const m of Object.values(MAPS))if(!m.theme)m.theme=1;
 }
 for(const m of Object.values(MAPS)){
@@ -470,7 +470,7 @@ for(const d of [{"id": "cleaner", "name": "Ms. Rosa", "look": "cleaner", "x": 6,
 Object.assign(LOOK,{rafa:{style:'short',hs:'swept',hair:'#2a1c14',skin:'#ecc9a6',eyes:'#3b2a1c',shirt:'#1a1a1f',blazer:'#a5428c',pants:'#a5428c',shoes:'#2a2a30',beard:true,camera:true,g:'m',build:1}});
 LOOK.giant=Object.assign({},LOOK.principal,{mood:'angry',tie:'#e05555'});
 QUIZ.boss={"id": "boss", "tag": "Big test", "qs": [{"en": "I take an umbrella ___ it is raining.", "es": "Llevo paraguas ___ está lloviendo.", "opts": ["because", "but", "then"], "hint": "BECAUSE = porque (da una razón)."}, {"en": "___ is your name?", "es": "¿___ es tu nombre? / ¿Cómo te llamas?", "opts": ["What", "Where", "Why"], "hint": "WHAT = qué (pregunta por cosas)."}, {"en": "I like tea, ___ I don't like coffee.", "es": "Me gusta el té, ___ no me gusta el café.", "opts": ["but", "and", "so"], "hint": "BUT = pero (contraste)."}, {"en": "___ do you live? In Santiago.", "es": "¿___ vives? En Santiago.", "opts": ["Where", "Who", "How"], "hint": "WHERE = dónde (pregunta por lugares)."}, {"en": "___ you study, you learn.", "es": "___ estudias, aprendes.", "opts": ["If", "But", "So"], "hint": "IF = si (condición)."}, {"en": "___ are you sad? Because I am tired.", "es": "¿___ estás triste? Porque estoy cansado.", "opts": ["Why", "Which", "Where"], "hint": "WHY = por qué. Se responde con BECAUSE."}, {"en": "I was tired, ___ I slept.", "es": "Estaba cansado, ___ dormí.", "opts": ["so", "but", "if"], "hint": "SO = así que (resultado)."}, {"en": "___ are you? I am fine, thanks.", "es": "¿___ estás? Estoy bien, gracias.", "opts": ["How", "Who", "What"], "hint": "HOW = cómo."}, {"en": "___ it was cold, we played outside.", "es": "___ hacía frío, jugamos afuera.", "opts": ["Although", "And", "So"], "hint": "ALTHOUGH = aunque (contraste inesperado)."}, {"en": "___ is your teacher? Teacher Seba!", "es": "¿___ es tu profesor? ¡El profe Seba!", "opts": ["Who", "Where", "Why"], "hint": "WHO = quién (pregunta por personas)."}]};QUIZ.boss.id='boss';QUIZ.final3.tag='Level 3 exam';
-for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}, {"id": "vitoko", "name": "Vitoko", "look": "vitoko", "x": 9, "y": 9, "dir": "down", "exam": "vitoko"}, {"id": "gateguard", "name": "Guardia", "look": "gateguard", "x": 17, "y": 7, "dir": "left", "exam": "gateguard"}, {"id": "kiosco", "name": "Don Beto", "look": "kiosco", "x": 14, "y": 4, "dir": "down", "exam": "kiosco"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
+for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}, {"id": "vitoko", "name": "Vitoko", "look": "vitoko", "x": 5, "y": 4, "dir": "down", "exam": "vitoko"}, {"id": "gateguard", "name": "Guardia", "look": "gateguard", "x": 17, "y": 7, "dir": "left", "exam": "gateguard"}, {"id": "kiosco", "name": "Don Beto", "look": "kiosco", "x": 14, "y": 4, "dir": "down", "exam": "kiosco"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
   exam:d.exam==='rafa'?(n=>talkRafa(n)):d.exam==='boss'?(n=>talkBoss(n)):d.exam==='mia'?(n=>talkLostGirl(n)):d.exam==='vitoko'?(n=>talkVitoko(n)):d.exam==='gateguard'?(n=>talkGateGuard(n)):d.exam==='kiosco'?(n=>talkKiosk(n)):undefined,
   mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.animal?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):d.id==='mia'?(()=>save.phoneGiven?2:1):d.id==='vitoko'?(()=>save.dogGiven?2:1):d.id==='gateguard'?(()=>save.bottleGiven?2:1):d.id==='kiosco'?(()=>save.bottle?2:1):undefined});
 for(const [id,n] of Object.entries(NPCS))n.id=id;
@@ -1421,11 +1421,11 @@ async function fetchDog(n){
 }
 async function talkKiosk(n){
   if(save.bottle){await say(n,'You already have a water bottle. Good luck!','Ya tienes una botella de agua. ¡Buena suerte!');return;}
-  await say(n,'Water bottle: $10. Stay hydrated on your journey!','Botella de agua: $10. ¡Mantente hidratado en tu viaje!');
+  await say(n,'Water bottle: $30. Stay hydrated on your journey!','Botella de agua: $30. ¡Mantente hidratado en tu viaje!');
   const yes=await askYesNo(n,'Do you want to buy it?','¿Quieres comprarla?','Yes! / ¡Sí!','Not now / Ahora no');
   if(!yes){await say(n,'Okay, come back when you are ready.','Ok, vuelve cuando estés listo.');return;}
-  if((save.money||0)<10){await say(n,'You need $10. Come back later!','Necesitas $10. ¡Vuelve más tarde!');return;}
-  save.money-=10;save.bottle=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  if((save.money||0)<30){await say(n,'You need $30. Come back later!','Necesitas $30. ¡Vuelve más tarde!');return;}
+  save.money-=30;save.bottle=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
   await say(n,'Here is your water bottle!','¡Aquí está tu botella de agua!');
 }
 async function talkGateGuard(n){
@@ -1437,7 +1437,7 @@ async function talkGateGuard(n){
     return;
   }
   await say(n,"I'm so thirsty! I won't let anyone pass without a water bottle.",'¡Tengo tanta sed! No dejaré pasar a nadie sin una botella de agua.');
-  await say(n,'You can buy one at the kiosk in the Plaza. It costs $10.','Puedes comprar una en el kiosko de la plaza. Cuesta $10.');
+  await say(n,'You can buy one at the kiosk in the Plaza. It costs $30.','Puedes comprar una en el kiosko de la plaza. Cuesta $30.');
 }
 async function askYesNo(spk,en,es,yes,no){
   const opts=[{t:yes,ok:true},{t:no,ok:false}];
@@ -1537,11 +1537,12 @@ async function goMap(id,x,y,dir){
     await say(MASCOT,'New friends and new words. Find 6 stars!','Nuevos amigos y nuevas palabras. ¡Consigue 6 estrellas!');}
   if(id==='plaza'&&!save.seen3){save.seen3=true;writeSave();
     await say(MASCOT,'Welcome to Level 3: the Plaza!','¡Bienvenido al Nivel 3: la Plaza!');
-    await say(MASCOT,'Time, routines and more. Find 6 stars!','La hora, las rutinas y más. ¡Consigue 6 estrellas!');}
+    await say(MASCOT,'Time, routines and more. Find 6 stars!','La hora, las rutinas y más. ¡Consigue 6 estrellas!');
+    await say(MASCOT,'There is a kiosk here too. And someone needs YOUR help!','También hay un kiosko aquí. ¡Y alguien necesita TU ayuda!');}
   if(id==='level4'&&!save.seen4){save.seen4=true;writeSave();
     await say(MASCOT,'Welcome to Level 4!','¡Bienvenido al Nivel 4!');
     await say(MASCOT,'A guard is blocking the way east. He looks thirsty...','Un guardia bloquea el camino al este. Se ve sediento...');
-    await say(MASCOT,'Maybe the kiosk back in the Plaza can help. And someone here needs YOUR help too!','Tal vez el kiosko de la Plaza pueda ayudar. ¡Y alguien aquí también necesita TU ayuda!');}
+    await say(MASCOT,'Maybe the kiosk back in the Plaza can help!','¡Tal vez el kiosko de la Plaza pueda ayudar!');}
   if(id==='final'&&!save.seenF){save.seenF=true;writeSave();
     await say(MASCOT,'Welcome to Level 5: the LAST courtyard!','¡Bienvenido al Nivel 5: el ÚLTIMO patio!');
     await say(MASCOT,'Two secret rooms... One door is locked. Tío Rafa\'s KEY can open it!','Dos salas secretas... Una puerta está cerrada. ¡La LLAVE del Tío Rafa puede abrirla!');
@@ -2123,8 +2124,8 @@ function applyCode(){
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
   else if(v==='001'){
     for(const lv of [1,2,3])for(const q of LV[lv])save.done[q]=true;
-    save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;save.money=(save.money||0)+30;
-    writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas, $30 y acceso al último nivel desbloqueados!';sfx.star();
+    save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;save.money=(save.money||0)+50;
+    writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas, $50 y acceso al último nivel desbloqueados!';sfx.star();
   }
   else if(!v){settings.ok=false;settings.msg='Escribe un código primero / Type a code first';sfx.bad();}
   else{settings.ok=false;settings.msg='Código incorrecto / Wrong code';sfx.bad();}
