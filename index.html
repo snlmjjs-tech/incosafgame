@@ -1714,8 +1714,8 @@ function drawHUD(c){
   c.font=F(13,'bold');const lab=`${cur.name} · ${cur.es}`,w=c.measureText(lab).width+26;
   mvWindow(c,CW/2-w/2+40,8,w,26,13,{gems:false});
   c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(lab,CW/2+40,21.5);
-  const icons=[[state.voice?'🗣️':'🔇','voz / voice',()=>toggleVoice()],[state.music?'🎵':'🔕','música / music',()=>toggleMusic()],['⚙️','configuración / settings (O)',()=>openSettings()]];
-  icons.forEach((ic,i)=>{const x=CW-104+i*34,y=8;mvWindow(c,x,y,30,30,15,{gems:false});c.font=F(15);c.fillStyle='#fff';c.fillText(ic[0],x+15,y+16);hits.push({x,y,w:30,h:30,fn:ic[2]});});
+  const icons=[['❓','ayuda / help (H)',()=>showHelp()],[state.voice?'🗣️':'🔇','voz / voice',()=>toggleVoice()],[state.music?'🎵':'🔕','música / music',()=>toggleMusic()],['⚙️','configuración / settings (O)',()=>openSettings()]];
+  icons.forEach((ic,i)=>{const x=CW-138+i*34,y=8;mvWindow(c,x,y,30,30,15,{gems:false});c.font=F(15);c.fillStyle='#fff';c.fillText(ic[0],x+15,y+16);hits.push({x,y,w:30,h:30,fn:ic[2]});});
   if(ui.mode==='play'){let chx=8;const chy=CH-30;
     const chip=t=>{c.font=F(13,'bold');const w=c.measureText(t).width+18;mvWindow(c,chx,chy,w,24,12,{gems:false,shadow:false});c.fillStyle='#fff';c.textAlign='left';c.textBaseline='middle';c.fillText(t,chx+9,chy+12.5);chx+=w+6;};
     if(save.key)chip('🔑 LLAVE / KEY');
@@ -1802,7 +1802,7 @@ function drawTitle(c){
     hits.push({x,y,w:bw,h:bh,fn:()=>{titleSel=i;startGame(it.id==='cont');},hover:()=>{if(titleSel!==i){titleSel=i;sfx.pick();}}});
   });
   c.font=F(11);c.fillStyle='rgba(255,255,255,.75)';
-  c.fillText('Flechas / WASD: caminar · Espacio / Enter: hablar · 1 2 3: responder · L: voz · M: música · O: configuración',CW/2,CH-12);
+  c.fillText('Flechas / WASD: caminar · Espacio / Enter: hablar · H: ayuda · L: voz · M: música · O: configuración',CW/2,CH-12);
 }
 function drawEnd(c){
   const K=CERT[certKind]||CERT.final;
@@ -2110,6 +2110,35 @@ function enterWorld(){
 }
 function toggleVoice(){state.voice=!state.voice;if(!state.voice&&'speechSynthesis' in window)speechSynthesis.cancel();savePrefs();}
 function toggleMusic(){state.music=!state.music;savePrefs();}
+function helpHint(){
+  if(!save.final1){
+    if(starsOf(1)<6)return['Talk to people around the Patio and the rooms to earn stars! You need 6 stars for Level 1.',`¡Habla con la gente del patio y las salas para ganar estrellas! Necesitas 6 estrellas para el Nivel 1. Tienes ${starsOf(1)}.`];
+    return['You have 6 stars! Go to the Auditorium and talk to Teacher Seba for your Level 1 exam.','¡Tienes 6 estrellas! Ve al auditorio y habla con el profe Seba para tu examen del Nivel 1.'];
+  }
+  if(!save.final2){
+    if(starsOf(2)<6)return['Now go to the second courtyard, the Garden, for Level 2! Talk to people to earn 6 stars.',`¡Ahora debes ir al segundo patio, el Jardín, para el Nivel 2! Habla con la gente para ganar 6 estrellas. Tienes ${starsOf(2)}.`];
+    return['You have 6 stars! Find the Vice Principal in the Garden for your Level 2 exam.','¡Tienes 6 estrellas! Busca a la vicedirectora en el jardín para tu examen del Nivel 2.'];
+  }
+  if(!save.final3){
+    if(starsOf(3)<6)return['Now go to the third courtyard, the Plaza, for Level 3! Talk to people to earn 6 stars.',`¡Ahora debes ir al tercer patio, la Plaza, para el Nivel 3! Habla con la gente para ganar 6 estrellas. Tienes ${starsOf(3)}.`];
+    return['You have 6 stars! Go back to the Auditorium and talk to Teacher Seba for your Level 3 exam.','¡Tienes 6 estrellas! Vuelve al auditorio y habla con el profe Seba para tu examen del Nivel 3.'];
+  }
+  if(!save.bottleGiven){
+    if(!save.bottle)return['Go to the kiosk in the Plaza and buy a water bottle for the guard in Level 4!','¡Ve al kiosko de la Plaza y compra una botella de agua para el guardia del Nivel 4!'];
+    return['Bring your water bottle to the guard in Level 4 so he lets you pass!','¡Llévale tu botella de agua al guardia del Nivel 4 para que te deje pasar!'];
+  }
+  if(!save.key){
+    if(!save.rafa)return['Find Tío Rafa in the Garden. He needs your help!','Busca al Tío Rafa en el jardín. ¡Necesita tu ayuda!'];
+    return['Take photos of the 5 animals (dog, cat, duck, rabbit, parrot) and bring them to Tío Rafa for the KEY!','¡Sácale fotos a los 5 animales (perro, gato, pato, conejo, loro) y llévaselas al Tío Rafa por la LLAVE!'];
+  }
+  if(!save.final4)return['Read the books in the Secret Library, then enter the DANGER room for your final test!','¡Lee los libros de la Biblioteca Secreta, luego entra a la sala de PELIGRO para tu prueba final!'];
+  return['You are a graduate! You finished the whole adventure!','¡Eres un egresado! ¡Terminaste toda la aventura!'];
+}
+async function sayHelp(){const [en,es]=helpHint();await say(MASCOT,en,es);}
+function showHelp(){
+  if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3)return;
+  runScript(sayHelp);
+}
 function speakCurrent(){const d=ui.mode==='say'?ui.dlg:ui.mode==='choose'?ui.choice:null;if(d){if(!state.voice)state.voice=true;speak(d.en);}}
 const settings={msg:'',ok:false};
 const MAPLIST=[['patio','Patio'],['class','Sala'],['library','Biblioteca'],['cafe','Cafetería'],['hall','Auditorio'],['garden','Jardín'],['gym','Gimnasio'],['lab','Laboratorio'],['art','Arte'],['music','Música'],['plaza','Plaza'],['computer','Computación'],['teachers','Profesores'],['level4','Nivel 4'],['final','Patio final'],['books','Biblioteca sec.'],['boss','Sala de Seba']];
@@ -2224,6 +2253,7 @@ addEventListener('keydown',e=>{
   else if(k==='l'||k==='L')speakCurrent();
   else if(k==='m'||k==='M')toggleMusic();
   else if(k==='v'||k==='V')toggleVoice();
+  else if((k==='h'||k==='H')&&scene==='game')showHelp();
   else if(scene==='setup'&&setup.step===1&&'12'.includes(k)&&k.length===1)pickGender(+k-1);
   else if(scene==='setup'&&setup.step===2&&(k==='r'||k==='R'))rotateLook();
   else if(scene==='setup'&&setup.step===2&&(k==='g'||k==='G'))randomLook();
