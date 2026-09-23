@@ -1361,9 +1361,11 @@ async function takePhoto(n){
   if(save.rafa>=2||save.photos[n.animal]){await say(n,A[2],A[3]);return;}
   if(n.id==='parrot'&&!save.parrotFled){
     save.parrotFled=true;writeSave();
-    const idx=cur.npcList.indexOf(n);if(idx>=0)cur.npcList.splice(idx,1);
-    n.x=8;n.y=6;n.tx=8;n.ty=6;n.px=undefined;n.moving=false;n.dir='down';
     sfx.bad();
+    n.fleeing=true;n.fleeT=0;n.fleeDir=(player.x<=n.x)?1:-1;n.moving=false;
+    await wait(1300);
+    const idx=cur.npcList.indexOf(n);if(idx>=0)cur.npcList.splice(idx,1);
+    n.fleeing=false;n.fleeT=0;n.x=8;n.y=6;n.tx=8;n.ty=6;n.px=undefined;n.moving=false;n.dir='down';
     await say(PLAYER,'Wait! The parrot flew away!','¡Espera! ¡El loro se voló!');
     await say(MASCOT,"I think it went to hide in the Teachers' Room, in the Plaza!",'¡Creo que se fue a esconder a la Sala de Profesores, en la plaza!');
     return;
@@ -1610,6 +1612,13 @@ function updateNPCs(dt){
   for(const n of cur.npcList){
     if(n.giant||n.block)continue;
     if(n.px===undefined){n.px=n.x*TS;n.py=n.y*TS;n.tx=n.x;n.ty=n.y;n.moving=false;n.anim=0;n.hx=n.x;n.hy=n.y;n.wait=1+hash(n.x,n.y,99)*3;}
+    if(n.fleeing){
+      n.fleeT+=dt;
+      n.px+=dt*72*(n.fleeDir||1);
+      n.py-=dt*(100+n.fleeT*70);
+      if(Math.random()<dt*20)parts.push({x:n.px+16,y:n.py+TS-4,vx:(Math.random()-.5)*40,vy:30+Math.random()*40,life:.5+Math.random()*.3,col:'#3cb54a',r:2+Math.random()*2,g:60});
+      continue;
+    }
     if(n.moving){
       n.anim+=dt*10;
       const gx=n.tx*TS,gy=n.ty*TS,dx=gx-n.px,dy=gy-n.py,dist=Math.hypot(dx,dy),budget=56*dt;
@@ -1761,7 +1770,7 @@ function drawGame(c){
     c.beginPath();c.arc(px0,py0,11,0,TAU);c.fillStyle='rgba(13,22,60,.85)';c.fill();c.strokeStyle=GOLD;c.lineWidth=2;c.stroke();
     c.font=F(14);c.textAlign='center';c.textBaseline='middle';c.fillText('📱',px0,py0+1);
   }
-  const ents=cur.npcList.map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
+  const ents=cur.npcList.filter(n=>!n.fleeing).map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
     const bob=n.moving?Math.abs(Math.sin(n.anim))*2:Math.sin(time*2+n.x)*.6;
     const walk=n.moving?Math.sin(n.anim*1.6):0;
@@ -1779,6 +1788,13 @@ function drawGame(c){
   ents.push({y:followerPos().y,draw:()=>drawFollower(c)});
   if(save.dogFound&&!save.dogGiven)ents.push({y:followerPos(58).y,draw:()=>drawDogFollower(c)});
   ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
+  for(const n of cur.npcList){
+    if(!n.fleeing)continue;
+    const alpha=Math.max(0,1-n.fleeT/1.3),flap=Math.sin(n.fleeT*22)*3;
+    c.save();c.globalAlpha=alpha;
+    drawAnimalOutlined(c,n.animal,n.px+16+flap,n.py+TS-2,1.35+n.fleeT*.12,time*3.2);
+    c.restore();
+  }
   if(cur.dusk){c.save();if(cur.pulse)c.globalAlpha=.65+.35*Math.sin(time*3);c.fillStyle=cur.dusk;c.fillRect(0,0,CW,CH);c.restore();}
   if(ui.mode==='play'&&!ui.locked&&!player.moving){
     const t=facingTarget();
