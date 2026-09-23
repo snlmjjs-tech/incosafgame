@@ -309,6 +309,9 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
     msg:()=>['The last gate is locked! I must pass the Level 3 exam first.','¡El último portón está cerrado! Primero debo aprobar el examen del Nivel 3.']});
   Object.assign(MAPS,{"level4":{"id":"level4","name":"Level 4 Courtyard","es":"El patio del Nivel 4","floor":"cobble","wall":"#14204f","facade":"#efdfa6","roof":true,"theme":4,"rows":["####################","WWWWWWWWWWWWWWWWWWWW","WWWWWWWWWWWWWWWWWWWW","HGGGccccccccccccGGGH","HGKGcccJccccJcccGKGH","HGGGccccccccccccGGGH","HcccccNccccccNcccccH","gccccccccOOccccccccH","HccccccccOOccccccccH","HcccccNccccccNcccccH","HGGGcccJccccJcccGGGH","HGKGccccccccccccGKGH","HGGGcccccXXcccccGGGH","HccccccccccccccccccH","HHHHHHHHHHHHHHHHHHHH"],"doors":[],"npcs":["gateguard","emma","sole","kai","diego2"],"tileTalk":{"O":[["A shiny fountain. Almost there!","Una fuente brillante. ¡Ya casi llegamos!"]]}}});
   MAPS.level4.rows[7]=MAPS.level4.rows[7].slice(0,19)+'g';
+  MAPS.level4.rows[7]=MAPS.level4.rows[7].slice(0,9)+'cc'+MAPS.level4.rows[7].slice(11);
+  MAPS.level4.rows[8]=MAPS.level4.rows[8].slice(0,9)+'cc'+MAPS.level4.rows[8].slice(11);
+  delete MAPS.level4.tileTalk.O;
   MAPS.level4.doors.push({x:0,y:7,to:'plaza',tx:18,ty:7,dir:'left',gate:true});
   MAPS.level4.doors.push({x:19,y:7,to:'final',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.bottleGiven,
     msg:()=>['The guard is thirsty! I need to bring him a water bottle from the Plaza kiosk.','¡El guardia tiene sed! Necesito traerle una botella de agua del kiosko de la plaza.']});
@@ -354,7 +357,7 @@ const LOOK={
  gardener:{skin:'#c98f5e',hair:'#8a8a8a',shirt:'#3d8b4d',pants:'#5a4630',style:'cap',cap:'#d4b45a'},
  coach:{skin:'#d8a679',hair:'#1a1a1a',shirt:'#c0392b',pants:'#222222',style:'cap',cap:'#c0392b'},
  scientist:{skin:'#f0cfa8',hair:'#4a3020',shirt:'#ffffff',pants:'#334455',style:'short',glasses:true},
- artist:{skin:'#f2c9a0',hair:'#6a2c91',shirt:'#ff9f43',pants:'#3a3f58',style:'bun',apron:true},
+ artist:{skin:'#f2c9a0',hair:'#1a1a1a',shirt:'#ff9f43',pants:'#3a3f58',style:'bun',apron:true},
  musician:{skin:'#d9a577',hair:'#222222',shirt:'#2c3e50',pants:'#1c2340',style:'short',glasses:true},
  vice:{skin:'#f0cfa8',hair:'#8a8a92',shirt:'#7a1f3d',pants:'#3a1020',style:'bun',glasses:true,tie:'#f7c600'},
  nico:{skin:'#f0c8a0',hair:'#7a3b1e',shirt:'#3498db',pants:'#20306b',style:'short'},
@@ -398,7 +401,7 @@ const QUIZ={
   {pic:'📖',en:'What is this?',es:'¿Qué es esto?',opts:['A book','A door','A bag'],hint:'📖 = libro = book.'},
   {pic:'🎒',en:'What is this?',es:'¿Qué es esto?',opts:['A backpack','A pencil','A table'],hint:'🎒 = mochila = backpack.'}]},
  numbers:{id:'numbers',tag:'Numbers',qs:[
-  {pic:'📚📚📚',en:'How many books?',es:'¿Cuántos libros hay?',opts:['Three','Five','Ten'],hint:'Hay 3 libros. 3 = three.'},
+  {pic:'📕📗📘',en:'How many books?',es:'¿Cuántos libros hay?',opts:['Three','Five','Ten'],hint:'Hay 3 libros. 3 = three.'},
   {en:'Which number is "ten"?',es:'¿Qué número es "ten"?',opts:['10','2','100'],hint:'ten = diez = 10.'},
   {en:'What comes after seven?',es:'¿Qué número viene después del siete?',opts:['Eight','Six','Nine'],hint:'seven = 7. Después viene el 8 = eight.'}]},
  colors:{id:'colors',tag:'Colors',qs:[
@@ -1437,11 +1440,11 @@ async function fetchDog(n){
 }
 async function talkKiosk(n){
   if(save.bottle){await say(n,'You already have a water bottle. Good luck!','Ya tienes una botella de agua. ¡Buena suerte!');return;}
-  await say(n,'Water bottle: $50. Stay hydrated on your journey!','Botella de agua: $50. ¡Mantente hidratado en tu viaje!');
+  await say(n,'Water bottle: $20. Stay hydrated on your journey!','Botella de agua: $20. ¡Mantente hidratado en tu viaje!');
   const yes=await askYesNo(n,'Do you want to buy it?','¿Quieres comprarla?','Yes! / ¡Sí!','Not now / Ahora no');
   if(!yes){await say(n,'Okay, come back when you are ready.','Ok, vuelve cuando estés listo.');return;}
-  if((save.money||0)<50){await say(n,'You need $50. Come back later!','Necesitas $50. ¡Vuelve más tarde!');return;}
-  save.money-=50;save.bottle=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  if((save.money||0)<20){await say(n,'You need $20. Come back later!','Necesitas $20. ¡Vuelve más tarde!');return;}
+  save.money-=20;save.bottle=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
   await say(n,'Here is your water bottle!','¡Aquí está tu botella de agua!');
 }
 async function talkGateGuard(n){
@@ -1454,7 +1457,7 @@ async function talkGateGuard(n){
   }
   await say(n,"I'm so thirsty! I won't let anyone pass without a water bottle.",'¡Tengo tanta sed! No dejaré pasar a nadie sin una botella de agua.');
   save.guardAsked=true;writeSave();
-  await say(n,'Go find the water seller! He is in the Garden, in a corner. It costs $50.','¡Ve a buscar al vendedor de agua! Está en el jardín, en una esquina. Cuesta $50.');
+  await say(n,'Go find the water seller! He is in the Garden, in a corner. It costs $20.','¡Ve a buscar al vendedor de agua! Está en el jardín, en una esquina. Cuesta $20.');
 }
 async function askYesNo(spk,en,es,yes,no){
   const opts=[{t:yes,ok:true},{t:no,ok:false}];
@@ -1515,7 +1518,11 @@ async function ending(){
 async function intro(){
   save.intro=true;
   await say(MASCOT,'Hello, {n}! I am INCOSAFITO, the mascot of INCOSAF!','¡Hola, {n}! ¡Soy INCOSAFITO, la mascota de INCOSAF!');
-  await say(MASCOT,"Let's learn English at school together!",'¡Aprendamos inglés juntos en el colegio!');
+  await say(MASCOT,'This is a game to learn English at school. Let me explain how it works!','Este es un juego para aprender inglés en el colegio. ¡Déjame explicarte cómo funciona!');
+  await say(MASCOT,'Walk around with the arrow keys and talk to teachers and students.','Camina con las flechas y habla con los profesores y compañeros.');
+  await say(MASCOT,"They will ask you questions in English. Answer them well to win STARS!",'¡Te harán preguntas en inglés! Respóndelas bien para ganar ESTRELLAS.');
+  await say(MASCOT,'Get 6 stars in each courtyard to unlock the exam and reach the next level!','¡Consigue 6 estrellas en cada patio para desbloquear el examen y pasar al siguiente nivel!');
+  await say(MASCOT,'There are 5 levels, secret quests and even a final test at the end. I will help you if you press the ❓ button!','¡Hay 5 niveles, misiones secretas y hasta una prueba final! Si necesitas ayuda, presiona el botón ❓.');
   await say(MASCOT,'First, talk to Alvarin. Go, go!','Primero, habla con Alvarin. ¡Vamos!');
   writeSave();
 }
