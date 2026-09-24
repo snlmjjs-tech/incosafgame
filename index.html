@@ -505,8 +505,14 @@ QUIZ.kaiBonus={tag:'Bonus',qs:[
   {en:'How do you say "¿Cómo estás?" in English?',es:'¿Cómo se dice "¿Cómo estás?" en inglés?',opts:['How are you?','What is this?','Where are you?'],hint:'HOW ARE YOU? = ¿Cómo estás?'},
   {en:'I am fine, ___ you?',es:'Estoy bien, ¿y ___?',opts:['and','but','so'],hint:'AND = y.'}
 ]};
+async function npcTestSkip(n){
+  if(!state.npcTest)return false;
+  await say(n,'Hi!','¡Hola!');
+  return true;
+}
 async function talkEmmaBonus(n){
   if(save.done.emmaBonus){await say(n,'Reading is fun! See you around.','¡Leer es divertido! Nos vemos.');return;}
+  if(await npcTestSkip(n))return;
   await say(n,'Hi! I am Emma. Want to try a quick quiz?','¡Hola! Soy Emma. ¿Quieres intentar un quiz rápido?');
   await runQuiz(n,QUIZ.emmaBonus,'emmaBonus');
   save.done.emmaBonus=true;save.money=(save.money||0)+5;writeSave();sfx.star();
@@ -514,6 +520,7 @@ async function talkEmmaBonus(n){
 }
 async function talkKaiBonus(n){
   if(save.done.kaiBonus){await say(n,'Keep practicing your English!','¡Sigue practicando tu inglés!');return;}
+  if(await npcTestSkip(n))return;
   await say(n,'Hi! I am Kai. Let\'s practice speaking!','¡Hola! Soy Kai. ¡Practiquemos!');
   await runQuiz(n,QUIZ.kaiBonus,'kaiBonus');
   save.done.kaiBonus=true;save.money=(save.money||0)+5;writeSave();sfx.star();
@@ -1398,7 +1405,6 @@ async function awardStar(){
 }
 async function talkNPC(n){
   n.dir=OPP[player.dir];
-  if(state.npcTest){await say(n,'Hi!','¡Hola!');return;}
   if(n.animal){
     if(n.id==='dog'){
       if(save.vitokoAsked&&!save.dogFound&&!save.dogGiven)return fetchDog(n);
@@ -1411,6 +1417,7 @@ async function talkNPC(n){
   if(lines){for(const l of lines)await say(n,l[0],l[1]);return;}
   const quiz=QUIZ[n.quest];
   if(save.done[n.quest]){for(const l of n.again)await say(n,l[0],l[1]);return;}
+  if(await npcTestSkip(n))return;
   for(const l of n.intro)await say(n,l[0],l[1]);
   await runQuiz(n,quiz,n.quest);
   save.done[n.quest]=true;await awardStar();
@@ -1427,6 +1434,7 @@ async function talkPrincipal(n){
   if(!save.final1){
     if(starsOf(1)<6&&!state.cheat){await say(n,'Come back with 6 stars, please.','Vuelve con 6 estrellas, por favor.');return;}
     await say(n,'Welcome, {n}! I am Teacher Seba.','¡Bienvenido, {n}! Soy el profe Seba.');
+    if(await npcTestSkip(n))return;
     await say(n,'This is your Level 1 exam. You can do it!','Este es tu examen del Nivel 1. ¡Tú puedes!');
     await runQuiz(n,QUIZ.final);
     await say(n,'Congratulations, {n}! Level 1 is complete!','¡Felicitaciones, {n}! ¡Nivel 1 completo!');
@@ -1435,6 +1443,7 @@ async function talkPrincipal(n){
   }
   if((save.level>=3&&starsOf(3)>=6)||state.cheat){
     await say(n,'Welcome back, {n}! It is time for Level 3.','¡Bienvenido de vuelta, {n}! Es hora del Nivel 3.');
+    if(await npcTestSkip(n))return;
     await say(n,'This is your Level 3 exam. You can do it!','Este es tu examen del Nivel 3. ¡Tú puedes!');
     await runQuiz(n,QUIZ.final3);
     await say(n,'Congratulations, {n}! Level 3 is complete!','¡Felicitaciones, {n}! ¡Nivel 3 completo!');
@@ -1454,6 +1463,7 @@ async function talkVice(n){
     await say(n,'Come back with 6 stars from Level 2.','Vuelve con las 6 estrellas del Nivel 2.');return;
   }
   await say(n,'Hello, {n}! I am the Vice Principal.','¡Hola, {n}! Soy la vicedirectora.');
+  if(await npcTestSkip(n))return;
   await say(n,'It is time for the Level 2 exam. You can do it!','Es hora del examen del Nivel 2. ¡Tú puedes!');
   await runQuiz(n,QUIZ.final2);
   await say(n,'Congratulations, {n}! Level 2 is complete!','¡Felicitaciones, {n}! ¡Nivel 2 completo!');
@@ -1673,6 +1683,7 @@ async function bossDeath(n){
 }
 async function talkBoss(n){
   if(save.final4){await say(n,'You passed my test, {n}. Now go home!','Pasaste mi prueba, {n}. ¡Ahora vete a casa!');return;}
+  if(await npcTestSkip(n))return;
   if(!save.bossTries){
     await say(n,'WHO DARES TO ENTER MY ROOM?!','¡¿QUIÉN SE ATREVE A ENTRAR EN MI SALA?!');
     await say(n,'I am Teacher Seba... the BIG Teacher Seba!','¡Soy el profe Seba... el profe Seba GIGANTE!');
@@ -1775,6 +1786,18 @@ function submitScore(){
       date:firebase.firestore.FieldValue.serverTimestamp()
     }).catch(()=>{});
   }catch(e){}
+}
+function clearLeaderboard(){
+  if(!fsDb)return Promise.reject(new Error('no db'));
+  return fsDb.collection('scores').get().then(snap=>{
+    const docs=snap.docs,chunks=[];
+    for(let i=0;i<docs.length;i+=400)chunks.push(docs.slice(i,i+400));
+    return chunks.reduce((p,chunk)=>p.then(()=>{
+      const batch=fsDb.batch();
+      chunk.forEach(d=>batch.delete(d.ref));
+      return batch.commit();
+    }),Promise.resolve());
+  });
 }
 let leaderboard=null,leaderboardStatus='idle';
 function fetchLeaderboard(){
@@ -1909,13 +1932,13 @@ function onArrive(){
       player.x=player.tx=d.x+b[0];player.y=player.ty=d.y+b[1];player.px=player.x*TS;player.py=player.y*TS;
       player.dir=b[0]<0?'left':b[0]>0?'right':'down';resetTrail();
     };
-    if(d.req&&!d.req()&&!state.cheat){
+    if(d.req&&!d.req()&&!state.cheat&&!state.npcTest){
       sfx.bad();
       const m=d.msg();await say(PLAYER,m[0],m[1]);
       bounceBack();
       return;
     }
-    if(d.itemGate&&!state.cheat){
+    if(d.itemGate&&!state.cheat&&!state.npcTest){
       const g=d.itemGate;
       const ok=await useDoorItem(g.item,g.flag,g.prompt,g.fail);
       if(!ok){bounceBack();return;}
@@ -2608,11 +2631,17 @@ function applyCode(){
   if(scene!=='settings')return;
   const v=codeEl.value.trim();codeEl.value='';
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
-  else if(v==='2179'){state.npcTest=!state.npcTest;settings.ok=true;settings.msg=state.npcTest?'🧪 ¡Modo prueba NPC ACTIVADO! Los NPC solo dirán "Hola".':'🧪 Modo prueba NPC desactivado.';sfx.star();}
+  else if(v==='2179'){state.npcTest=!state.npcTest;settings.ok=true;settings.msg=state.npcTest?'🧪 ¡Modo prueba NPC ACTIVADO! Los NPC solo dirán "Hola" y las puertas cerradas se abrirán.':'🧪 Modo prueba NPC desactivado.';sfx.star();}
   else if(v==='001'){
     for(const lv of [1,2,3])for(const q of LV[lv])save.done[q]=true;
     save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;save.money=(save.money||0)+80;
     writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas, $80 y acceso al último nivel desbloqueados!';sfx.star();
+  }
+  else if(v==='8992'){
+    settings.ok=true;settings.msg='🗑️ Borrando el ranking...';
+    clearLeaderboard().then(()=>{
+      leaderboard=[];leaderboardStatus='ok';settings.msg='🗑️ ¡Ranking borrado! Se eliminaron los puntajes de todos los jugadores.';sfx.star();
+    }).catch(()=>{settings.ok=false;settings.msg='❌ No se pudo borrar el ranking. Intenta de nuevo.';sfx.bad();});
   }
   else if(!v){settings.ok=false;settings.msg='Escribe un código primero / Type a code first';sfx.bad();}
   else{settings.ok=false;settings.msg='Código incorrecto / Wrong code';sfx.bad();}
