@@ -20,9 +20,9 @@ body.touch #pad{display:flex}
 #acts{display:flex;gap:14px;align-items:center}
 #bA{width:84px;height:84px;border-radius:50%;font-size:17px}
 #bL{width:56px;height:56px;border-radius:50%;font-size:22px}
-#nm,#cd{display:none;position:absolute;z-index:5;box-sizing:border-box;border:4px solid var(--gold);border-radius:14px;background:#0d163c;color:#fff;
+#nm,#cd,#crs{display:none;position:absolute;z-index:5;box-sizing:border-box;border:4px solid var(--gold);border-radius:14px;background:#0d163c;color:#fff;
   font:700 24px "Trebuchet MS","Segoe UI",system-ui,sans-serif;text-align:center;outline:none;user-select:text;-webkit-user-select:text;touch-action:auto;padding:0 10px}
-#nm::placeholder,#cd::placeholder{color:#8e9bd0;font-weight:400}
+#nm::placeholder,#cd::placeholder,#crs::placeholder{color:#8e9bd0;font-weight:400}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -31,6 +31,7 @@ body.touch #pad{display:flex}
   <canvas id="game" aria-label="Juego: INCOSAFITO aprende inglés en el colegio"></canvas>
   <input id="cd" type="text" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Código" aria-label="Ingresar código">
   <input id="nm" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Tu nombre / Your name" aria-label="Escribe tu nombre">
+  <input id="crs" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Ej: 5to Básico A" aria-label="Escribe tu curso">
   <div id="pad">
     <div id="dpad">
       <div></div><div class="btn" data-dir="up">▲</div><div></div>
@@ -52,6 +53,7 @@ const TS=32, MW=20, MH=15, CW=640, CH=480, SC=2;
 const cv=document.getElementById('game'), ctx=cv.getContext('2d');
 cv.width=CW*SC; cv.height=CH*SC;
 const inp=document.getElementById('nm');
+const crsInp=document.getElementById('crs');
 const codeEl=document.getElementById('cd');
 function positionCode(){
   if(codeEl.style.display!=='block')return;
@@ -62,6 +64,11 @@ function positionInput(){
   if(inp.style.display!=='block')return;
   const r=cv.getBoundingClientRect(),k=r.width/CW;
   inp.style.left=(r.left+230*k)+'px';inp.style.top=(r.top+236*k)+'px';inp.style.width=(360*k)+'px';inp.style.height=(52*k)+'px';inp.style.fontSize=(24*k)+'px';
+}
+function positionCourseInput(){
+  if(crsInp.style.display!=='block')return;
+  const r=cv.getBoundingClientRect(),k=r.width/CW;
+  crsInp.style.left=(r.left+230*k)+'px';crsInp.style.top=(r.top+236*k)+'px';crsInp.style.width=(360*k)+'px';crsInp.style.height=(52*k)+'px';crsInp.style.fontSize=(24*k)+'px';
 }
 const FONT='"Trebuchet MS","Segoe UI",system-ui,sans-serif';
 const EMO=',"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji"';
@@ -111,7 +118,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -125,7 +132,7 @@ const PLAYER={get name(){return save.name||'Amigo';},get look(){return save.look
 const AV=[{key:'boy1',label:'Boy 1'},{key:'girl1',label:'Girl 1'},{key:'boy2',label:'Boy 2'},{key:'girl2',label:'Girl 2'}];
 const fmt=s=>String(s).split('{n}').join(save.name||'Amigo');
 let cur=null;
-let setup={step:0,sel:0,shake:0,look:null,row:0,rot:0,back:false}, certKind='final', certResolve=null, followerFlip=false;
+let setup={step:0,sel:0,shake:0,shakeC:0,look:null,row:0,rot:0,back:false}, certKind='final', certResolve=null, followerFlip=false;
 
 /* ---------- audio (todo procedural) ---------- */
 let ac=null,master=null,mStep=0,mNext=0;
@@ -1069,6 +1076,29 @@ function drawPerson(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
 }
 function accessories(c,L,dir){
   const side=(dir==='left'||dir==='right');
+  if(L.freckles==='on'&&!side&&dir!=='up'){
+    c.fillStyle='rgba(150,90,50,.55)';
+    for(const [fx,fy] of [[-6,-31],[-4.2,-30],[-5.6,-29],[6,-31],[4.2,-30],[5.6,-29]])E(c,fx,fy,.55,.55,'rgba(150,90,50,.55)');
+  }
+  if(L.earrings==='on'&&!side&&dir!=='up'){
+    E(c,-9.2,-31,.7,.7,GOLD);E(c,9.2,-31,.7,.7,GOLD);
+  }
+  if(L.backpack==='on'){
+    const bp='#e07b39';
+    if(dir==='up'){
+      RR(c,-7.6,-27,15.2,14,4,bp);
+      RR(c,-5.6,-24.6,11.2,5.4,2,sh(bp,-.15));
+      c.fillStyle='rgba(0,0,0,.15)';c.fillRect(-7.6,-27,15.2,2);
+    }else if(side){
+      RR(c,-9.4,-27,7.6,13,3.4,bp);
+      c.fillStyle='rgba(0,0,0,.18)';c.fillRect(-9.4,-27,7.6,1.8);
+      c.strokeStyle=sh(bp,-.2);c.lineWidth=1;c.beginPath();c.moveTo(-2,-27);c.lineTo(-2,-24);c.moveTo(.5,-33);c.lineTo(-4,-27);c.stroke();
+    }else{
+      c.strokeStyle=bp;c.lineWidth=2.4;c.lineCap='round';
+      c.beginPath();c.moveTo(-4.6,-26.5);c.lineTo(-3,-19);c.moveTo(4.6,-26.5);c.lineTo(3,-19);c.stroke();
+      c.lineCap='butt';
+    }
+  }
   if(L.style==='cap'){
     if(dir==='up'){E(c,0,-35,10.4,10.2,L.cap);c.fillStyle='rgba(0,0,0,.12)';c.fillRect(-10.4,-33,20.8,1.4);}
     else if(side){domeSide(c,L.cap,[[7.6,-38],[1,-36.4]]);RR(c,3.6,-39.4,9.4,2.8,1.4,sh(L.cap,-.28));E(c,-1,-44.6,1.1,1.1,GOLD);}
@@ -1529,9 +1559,50 @@ async function talkBoss(n){
 }
 async function ending(){
   writeSave();
+  submitScore();
   await fadeTo(1);
   certKind='final';scene='end';endT=0;parts.length=0;sfx.win();speak('Congratulations! You learned English at school!');
   await fadeTo(0);
+}
+/* ---------- puntaje del curso (opcional) ----------
+   Para que los resultados de tus alumnos queden guardados en una planilla
+   que tú puedas revisar, sigue estos pasos (toma ~5 minutos):
+   1. Crea una Hoja de cálculo nueva en Google Sheets.
+   2. Menú Extensiones → Apps Script. Borra el código de ejemplo y pega esto:
+
+      function doPost(e){
+        const sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        const d = JSON.parse(e.postData.contents);
+        sh.appendRow([new Date(), d.name, d.course, d.stars, d.maxStars, d.mistakes]);
+        return ContentService.createTextOutput('ok');
+      }
+
+   3. Implementar → Nueva implementación → tipo "Aplicación web".
+      Ejecutar como: Yo. Quién tiene acceso: Cualquier usuario.
+   4. Copia la URL que te entrega (termina en /exec) y pégala abajo en
+      SCORE_ENDPOINT, entre las comillas.
+   5. Sube el archivo actualizado a tu página web. Cada vez que un alumno
+      termine el juego (pase la prueba final), su nombre, curso y puntaje
+      se agregarán como una fila nueva a tu planilla, automáticamente.
+   Mientras SCORE_ENDPOINT esté vacío, el juego funciona igual, solo que
+   no envía nada a ningún lado. */
+const SCORE_ENDPOINT='';
+function submitScore(){
+  if(!SCORE_ENDPOINT)return;
+  try{
+    fetch(SCORE_ENDPOINT,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({
+        name:save.name||'',
+        course:save.course||'',
+        stars:starsOf(1)+starsOf(2)+starsOf(3),
+        maxStars:18,
+        mistakes:save.mistakes||0
+      })
+    }).catch(()=>{});
+  }catch(e){}
 }
 async function intro(){
   save.intro=true;
@@ -1875,6 +1946,7 @@ function drawEnd(c){
   const tx=(92+w+80+554)/2;
   let fs=30;const nm=save.name||'Amigo';c.font=F(fs,'bold');while(c.measureText(nm).width>226&&fs>16){fs-=2;c.font=F(fs,'bold');}
   c.fillStyle=NAVY;c.fillText(nm,tx,170);
+  if(save.course){c.font=F(13,'italic');c.fillStyle='#6b5a2a';c.fillText(save.course,tx,190);}
   c.font=F(19,'bold');c.fillStyle='#333';c.fillText(K.line,tx,208);
   c.font=F(22,'bold');c.fillStyle='#b8860b';c.fillText(K.big,tx,240);
   c.font=F(14,'italic');c.fillStyle='#555';c.fillText(K.es,tx,272);
@@ -1904,6 +1976,17 @@ function drawSetup(c){
     btn(320,304,190,44,'Listo / OK  ▶',true,()=>finishName());
     if(time<setup.shake){c.font=F(14,'bold');c.fillStyle='#ff9a9a';c.fillText('¡Falta tu nombre! / Your name, please!',415,372);}
   }else if(setup.step===1){
+    const h=250,w=h*mAR();
+    c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.ellipse(120,392,54,9,0,0,TAU);c.fill();
+    if(mascotOK())c.drawImage(mascot,120-w/2,384-h-bob,w,h);
+    c.fillStyle='rgba(13,22,60,.96)';rr(c,215,40,400,170,20);c.fill();c.strokeStyle=GOLD;c.lineWidth=3;rr(c,215,40,400,170,20);c.stroke();
+    c.font=F(22,'bold');c.fillStyle='#fff';c.fillText(`Nice to meet you, ${save.name}!`,415,78);
+    c.font=F(28,'bold');c.fillStyle=GOLD;c.fillText("What's your class?",415,124);
+    c.font=F(15,'italic');c.fillStyle='#ffe27a';c.fillText('¿En qué curso estás?',415,166);
+    c.font=F(12);c.fillStyle='rgba(255,255,255,.75)';c.fillText('Ej: "5to Básico A" — así tu profe puede ver los resultados',415,192);
+    btn(320,304,190,44,'Listo / OK  ▶',true,()=>finishCourse());
+    if(time<setup.shakeC){c.font=F(14,'bold');c.fillStyle='#ff9a9a';c.fillText('¡Falta tu curso! / Your class, please!',415,372);}
+  }else if(setup.step===2){
     const h=110,w=h*mAR();
     if(mascotOK())c.drawImage(mascot,20,20-bob,w,h);
     c.fillStyle='rgba(13,22,60,.96)';rr(c,150,24,466,112,18);c.fill();c.strokeStyle=GOLD;c.lineWidth=3;rr(c,150,24,466,112,18);c.stroke();
@@ -1962,7 +2045,16 @@ function drawSetup(c){
     });
     btn(14,424,118,36,'↻ Girar / Turn',false,()=>rotateLook());
     btn(140,424,118,36,'🎲 Al azar',false,()=>randomLook());
+    const accBtn=(x,icon,key,tip)=>{
+      const on=L[key]==='on';
+      c.fillStyle=on?GOLD:'rgba(13,22,60,.92)';rr(c,x,424,42,36,12);c.fill();
+      c.strokeStyle=on?'#fff':GOLD;c.lineWidth=2.5;rr(c,x,424,42,36,12);c.stroke();
+      c.font=F(18);c.fillStyle=on?NAVY:'#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(icon,x+21,424+19);
+      hits.push({x,y:424,w:42,h:36,fn:()=>{L[key]=on?'none':'on';sfx.pick();}});
+    };
+    accBtn(266,'🎒','backpack');accBtn(312,'🔸','freckles');accBtn(358,'💎','earrings');
     btn(398,422,228,42,'Listo / Done  ▶',true,()=>finishCustom());
+    c.font=F(9);c.fillStyle='rgba(255,255,255,.7)';c.textAlign='center';c.fillText('Mochila · Pecas · Aretes',332,466);
     c.textAlign='center';c.font=F(11);c.fillStyle='rgba(255,255,255,.8)';c.fillText('↑↓ elegir · ←→ cambiar · R girar · G al azar · Enter listo',CW/2,CH-10);
   }
 }
@@ -2122,9 +2214,9 @@ const ROWS=[
 ];
 const ROT=['down','right','up','left'];
 function defaultLook(g){return g==='f'
-  ?{g:'f',hs:'ponytail',hair:'#6b4226',eyes:'#3b2a1c',glasses:'none',skin:'#f2c9a0',build:1,shirt:'#ff8fb1',bt:'skirt',pants:'#1c2a5e',shoes:'#ffffff'}
-  :{g:'m',hs:'short',hair:'#3a2417',eyes:'#3b2a1c',glasses:'none',skin:'#f2c9a0',build:1,shirt:'#f4f4f4',bt:'long',pants:'#1c2a5e',shoes:'#ffffff'};}
-function presetLook(i){const L=normLook(LOOK[AV[i].key]);return {g:L.g,hs:L.hs,hair:L.hair,eyes:L.eyes,glasses:L.glasses||'none',skin:L.skin,build:1,shirt:L.shirt,bt:L.bt,pants:L.pants,shoes:'#ffffff'};}
+  ?{g:'f',hs:'ponytail',hair:'#6b4226',eyes:'#3b2a1c',glasses:'none',skin:'#f2c9a0',build:1,shirt:'#ff8fb1',bt:'skirt',pants:'#1c2a5e',shoes:'#ffffff',backpack:'none',freckles:'none',earrings:'none'}
+  :{g:'m',hs:'short',hair:'#3a2417',eyes:'#3b2a1c',glasses:'none',skin:'#f2c9a0',build:1,shirt:'#f4f4f4',bt:'long',pants:'#1c2a5e',shoes:'#ffffff',backpack:'none',freckles:'none',earrings:'none'};}
+function presetLook(i){const L=normLook(LOOK[AV[i].key]);return {g:L.g,hs:L.hs,hair:L.hair,eyes:L.eyes,glasses:L.glasses||'none',skin:L.skin,build:1,shirt:L.shirt,bt:L.bt,pants:L.pants,shoes:'#ffffff',backpack:'none',freckles:'none',earrings:'none'};}
 function cycleRow(i,dir){const R=ROWS[i],L=setup.look;const vals=R.key==='hs'?hairsFor(L.g):R.vals;let k=vals.indexOf(L[R.key]);if(k<0)k=0;k=(k+dir+vals.length)%vals.length;L[R.key]=vals[k];setup.row=i;sfx.pick();}
 function setRow(i,v){setup.look[ROWS[i].key]=v;setup.row=i;sfx.pick();}
 function rotateLook(){setup.rot=(setup.rot+1)%4;sfx.pick();}
@@ -2138,21 +2230,29 @@ function finishName(){
   const v=inp.value.replace(/\s+/g,' ').trim().slice(0,12).replace(/^./,ch=>ch.toLocaleUpperCase('es'));
   if(!v){setup.shake=time+2;sfx.bad();try{inp.focus();}catch(e){}return;}
   save.name=v;inp.style.display='none';try{inp.blur();}catch(e){}
-  setup.step=1;setup.sel=0;sfx.ok();speak(`Nice to meet you, ${v}! Are you a boy or a girl?`);
+  setup.step=1;crsInp.value='';crsInp.style.display='block';positionCourseInput();setTimeout(()=>{try{crsInp.focus();}catch(e){}},60);
+  sfx.ok();speak(`Nice to meet you, ${v}! What is your class?`);
+}
+function finishCourse(){
+  if(scene!=='setup'||setup.step!==1)return;
+  const v=crsInp.value.replace(/\s+/g,' ').trim().slice(0,20);
+  if(!v){setup.shakeC=time+2;sfx.bad();try{crsInp.focus();}catch(e){}return;}
+  save.course=v;crsInp.style.display='none';try{crsInp.blur();}catch(e){}
+  setup.step=2;setup.sel=0;sfx.ok();speak('Are you a boy or a girl?');
 }
 function pickGender(i){
-  if(scene!=='setup'||setup.step!==1)return;
-  setup.look=defaultLook(i===0?'m':'f');setup.step=2;setup.row=0;setup.rot=0;sfx.ok();speak('Make your character!');
+  if(scene!=='setup'||setup.step!==2)return;
+  setup.look=defaultLook(i===0?'m':'f');setup.step=3;setup.row=0;setup.rot=0;sfx.ok();speak('Make your character!');
 }
 function finishCustom(){
-  if(scene!=='setup'||setup.step!==2)return;
+  if(scene!=='setup'||setup.step!==3)return;
   save.look=Object.assign({},setup.look);sfx.ok();
   if(setup.back){setup.back=false;scene='game';held.length=0;writeSave();return;}
   enterWorld();
 }
 function openWardrobe(){
   if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3)return;
-  setup.look=Object.assign({},save.look||presetLook(save.avatar||0));setup.step=2;setup.row=0;setup.rot=0;setup.back=true;held.length=0;scene='setup';sfx.pick();
+  setup.look=Object.assign({},save.look||presetLook(save.avatar||0));setup.step=3;setup.row=0;setup.rot=0;setup.back=true;held.length=0;scene='setup';sfx.pick();
 }
 function enterWorld(){
   if(!save.look)save.look=presetLook(save.avatar||0);
@@ -2265,7 +2365,7 @@ function confirmAction(){
   if(scene==='book'){bookTurn(1,true);return;}
   if(scene==='settings')return;
   if(scene==='title'){startGame(hasSave&&titleSel===1);return;}
-  if(scene==='setup'){if(setup.step===0)finishName();else if(setup.step===1)pickGender(setup.sel);else finishCustom();return;}
+  if(scene==='setup'){if(setup.step===0)finishName();else if(setup.step===1)finishCourse();else if(setup.step===2)pickGender(setup.sel);else finishCustom();return;}
   if(scene==='end'){
     if(endT<1.8)return;
     if(certResolve){const r=certResolve;certResolve=null;(async()=>{await fadeTo(1);scene='game';parts.length=0;held.length=0;await fadeTo(0);r();})();return;}
@@ -2279,8 +2379,8 @@ function nav(dir){
   if(scene==='book'){if(dir==='left')bookTurn(-1);else if(dir==='right')bookTurn(1);return;}
   if(scene==='settings'){if(dir==='left')volStep(-.1);else if(dir==='right')volStep(.1);return;}
   if(scene==='setup'){
-    if(setup.step===1){setup.sel=1-setup.sel;sfx.pick();}
-    else if(setup.step===2){
+    if(setup.step===2){setup.sel=1-setup.sel;sfx.pick();}
+    else if(setup.step===3){
       if(dir==='up'||dir==='down'){setup.row=(setup.row+(dir==='down'?1:ROWS.length-1))%ROWS.length;sfx.pick();}
       else cycleRow(setup.row,dir==='right'?1:-1);
     }
@@ -2300,6 +2400,7 @@ const CONF=[' ','Enter','z','Z','e','E'];
 addEventListener('keydown',e=>{
   if(e.target&&e.target.id==='cd'){if(e.key==='Enter'){e.preventDefault();applyCode();}else if(e.key==='Escape'){e.preventDefault();closeSettings();}return;}
   if(e.target&&e.target.id==='nm'){if(e.key==='Enter'){e.preventDefault();finishName();}return;}
+  if(e.target&&e.target.id==='crs'){if(e.key==='Enter'){e.preventDefault();finishCourse();}return;}
   if(e.ctrlKey||e.metaKey||e.altKey)return;
   const k=e.key;
   if(KEYMAP[k]||CONF.includes(k))e.preventDefault();
@@ -2311,9 +2412,9 @@ addEventListener('keydown',e=>{
   else if(k==='m'||k==='M')toggleMusic();
   else if(k==='v'||k==='V')toggleVoice();
   else if((k==='h'||k==='H')&&scene==='game')showHelp();
-  else if(scene==='setup'&&setup.step===1&&'12'.includes(k)&&k.length===1)pickGender(+k-1);
-  else if(scene==='setup'&&setup.step===2&&(k==='r'||k==='R'))rotateLook();
-  else if(scene==='setup'&&setup.step===2&&(k==='g'||k==='G'))randomLook();
+  else if(scene==='setup'&&setup.step===2&&'12'.includes(k)&&k.length===1)pickGender(+k-1);
+  else if(scene==='setup'&&setup.step===3&&(k==='r'||k==='R'))rotateLook();
+  else if(scene==='setup'&&setup.step===3&&(k==='g'||k==='G'))randomLook();
   else if(scene==='game'&&(k==='c'||k==='C'))openWardrobe();
   else if(scene==='book'&&(k==='Escape'||k==='o'||k==='O'))closeBook();
   else if((k==='Escape'||k==='o'||k==='O')&&scene==='game')openSettings();
@@ -2353,7 +2454,7 @@ function resize(){
   const availH=innerHeight-(touch?190:20),availW=innerWidth-20;
   const w=Math.max(240,Math.min(availW,availH*CW/CH));
   cv.style.width=w+'px';cv.style.height=(w*CH/CW)+'px';
-  positionInput();positionCode();
+  positionInput();positionCode();positionCourseInput();
 }
 addEventListener('resize',resize);resize();
 if('speechSynthesis' in window)speechSynthesis.getVoices();
