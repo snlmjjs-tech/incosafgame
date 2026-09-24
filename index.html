@@ -1606,7 +1606,14 @@ async function ending(){
    cada error que cometas durante todo el juego (ver computeScore()).
    Mientras FIREBASE_CONFIG sea null, el juego funciona igual, solo que
    no guarda ni muestra nada de esto. */
-const FIREBASE_CONFIG=null;
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBQndkUnQSzDP9XeZEY7NTYKREzOVAVx5M",
+  authDomain:"gamerpg-86140.firebaseapp.com",
+  projectId:"gamerpg-86140",
+  storageBucket:"gamerpg-86140.firebasestorage.app",
+  messagingSenderId:"58699603860",
+  appId:"1:58699603860:web:c17189a40f644f42f07981"
+};
 let fsDb=null;
 if(FIREBASE_CONFIG&&typeof firebase!=='undefined'){
   try{firebase.initializeApp(FIREBASE_CONFIG);fsDb=firebase.firestore();}catch(e){}
