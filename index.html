@@ -1978,7 +1978,7 @@ function updateNPCs(dt){
   if(!cur||!cur.npcList)return;
   for(const n of cur.npcList){
     if(n.giant||n.block)continue;
-    if(n.px===undefined){n.px=n.x*TS;n.py=n.y*TS;n.tx=n.x;n.ty=n.y;n.moving=false;n.anim=0;n.hx=n.x;n.hy=n.y;n.wait=1+hash(n.x,n.y,99)*3;}
+    if(n.px===undefined){n.px=n.x*TS;n.py=n.y*TS;n.tx=n.x;n.ty=n.y;n.moving=false;n.anim=0;n.hx=n.x;n.hy=n.y;n.wait=n.fast?hash(n.x,n.y,99)*.4:1+hash(n.x,n.y,99)*3;}
     if(n.fleeing){
       n.fleeT+=dt;
       n.px+=dt*72*(n.fleeDir||1);
@@ -1988,15 +1988,15 @@ function updateNPCs(dt){
     }
     if(n.moving){
       n.anim+=dt*(n.fast?18:10);
-      const gx=n.tx*TS,gy=n.ty*TS,dx=gx-n.px,dy=gy-n.py,dist=Math.hypot(dx,dy),budget=(n.fast?168:56)*dt;
-      if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=n.fast?.15+Math.random()*.35:1.4+Math.random()*3;}
+      const gx=n.tx*TS,gy=n.ty*TS,dx=gx-n.px,dy=gy-n.py,dist=Math.hypot(dx,dy),budget=(n.fast?192:56)*dt;
+      if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=n.fast?.05+Math.random()*.1:1.4+Math.random()*3;}
       else{n.px+=dx/dist*budget;n.py+=dy/dist*budget;}
     }else{
       if(ui.locked)continue;
       n.wait-=dt;
       if(n.wait<=0){
-        n.wait=n.fast?.15+Math.random()*.35:1.4+Math.random()*3;
-        if(Math.random()<(n.fast?.9:.55))for(const dname of shuffle(Object.keys(DIRS))){
+        n.wait=n.fast?.05+Math.random()*.1:1.4+Math.random()*3;
+        if(Math.random()<(n.fast?1:.55))for(const dname of shuffle(Object.keys(DIRS))){
           const [dx,dy]=DIRS[dname],nx=n.x+dx,ny=n.y+dy;
           if(Math.abs(nx-n.hx)>(n.fast?3:1)||Math.abs(ny-n.hy)>(n.fast?3:1))continue;
           if(!passable(nx,ny))continue;
