@@ -120,7 +120,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -327,6 +327,15 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.final.doors.push({x:0,y:7,to:'level4',tx:18,ty:7,dir:'left',gate:true});
   MAPS.final.doors[0].req=()=>save.key;
   MAPS.final.doors[0].msg=()=>['This door is locked! I need the KEY from Tío Rafa.','¡Esta puerta está cerrada! Necesito la LLAVE del Tío Rafa.'];
+  MAPS.final.doors[0].itemGate={item:'key',flag:'gateLibrary',
+    prompt:['This lock needs a key. Let me check my backpack...','Esta cerradura necesita una llave. Déjame revisar mi mochila...'],
+    fail:["This isn't the right key...",'Esta no es la llave correcta...']};
+  MAPS.final.doors[1].req=()=>save.sword;
+  MAPS.final.doors[1].msg=()=>['This door is chained shut with a padlock! I need something to break it.','¡Esta puerta está encadenada con un candado! Necesito algo para romperlo.'];
+  MAPS.final.doors[1].itemGate={item:'sword',flag:'gateBoss',
+    prompt:['This padlock looks tough. Let me check my backpack...','Este candado se ve difícil. Déjame revisar mi mochila...'],
+    fail:["This won't break the padlock...",'Esto no rompe el candado...']};
+  MAPS.garden.swordAt={x:17,y:3};
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');
   MAPS.plaza.npcs.push('mia','vitoko');MAPS.computer.phoneAt={x:10,y:9};
   for(const m of Object.values(MAPS))if(!m.theme)m.theme=1;
@@ -1085,7 +1094,7 @@ function accessories(c,L,dir){
   if(L.earrings==='on'&&!side&&dir!=='up'){
     E(c,-9.2,-31,.7,.7,GOLD);E(c,9.2,-31,.7,.7,GOLD);
   }
-  if(L.backpack==='on'){
+  if(true){
     const bp='#e07b39';
     if(dir==='up'){
       RR(c,-7.6,-27,15.2,14,4,bp);
@@ -1470,6 +1479,11 @@ async function pickupPhone(){
   await say(PLAYER,'A phone on the floor! It must be Mía\'s phone.','¡Un celular en el piso! Debe ser el celular de Mía.');
   await say(PLAYER,'I should give it back to her.','Debería devolvérselo.');
 }
+async function pickupSword(){
+  save.sword=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  await say(PLAYER,'An old sword, hidden in the corner!','¡Una espada vieja, escondida en la esquina!');
+  await say(PLAYER,'This could help me break something later...','Esto podría ayudarme a romper algo más tarde...');
+}
 async function talkVitoko(n){
   if(save.dogGiven){await say(n,'Thank you again for bringing back my dog, {n}!','¡Gracias de nuevo por traer a mi perro, {n}!');return;}
   if(save.dogFound){
@@ -1478,15 +1492,19 @@ async function talkVitoko(n){
     await say(n,'Here, $5 for you as a thank you!','¡Toma, $5 para ti como agradecimiento!');
     return;
   }
-  save.vitokoAsked=true;writeSave();
+  save.vitokoAsked=true;save.leash=true;writeSave();sfx.star();
   await say(n,'*sniff* I lost my dog...','*sniff* Perdí a mi perro...');
   await say(n,'I think he ran to the Patio, at the entrance of the school!','¡Creo que corrió al patio, en la entrada del colegio!');
+  await say(n,'Take this leash, you will need it to catch him!','¡Toma esta correa, la vas a necesitar para atraparlo!');
   await say(n,'Can you bring him back, {n}? Please!','¿Puedes traerlo de vuelta, {n}? ¡Por favor!');
 }
 async function fetchDog(n){
+  await say(PLAYER,"There he is! I need something to catch him...",'¡Ahí está! Necesito algo para atraparlo...');
+  const ok=await openBackpack(PLAYER,'leash');
+  if(!ok){await say(PLAYER,"I can't catch him with this. I need the LEASH!",'No puedo atraparlo con esto. ¡Necesito la CORREA!');return;}
   save.dogFound=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
   const idx=cur.npcList.indexOf(n);if(idx>=0)cur.npcList.splice(idx,1);
-  await say(PLAYER,"Hey, it's Vitoko's dog! Come with me, boy!",'¡Oye, es el perro de Vitoko! ¡Ven conmigo!');
+  await say(PLAYER,"Got him with the leash! Come with me, boy!",'¡Lo atrapé con la correa! ¡Ven conmigo!');
 }
 async function talkKiosk(n){
   if(save.bottle){await say(n,'You already have a water bottle. Good luck!','Ya tienes una botella de agua. ¡Buena suerte!');return;}
@@ -1500,8 +1518,11 @@ async function talkKiosk(n){
 async function talkGateGuard(n){
   if(save.bottleGiven){await say(n,'Thanks again for the water! Go ahead.','¡Gracias de nuevo por el agua! Adelante.');return;}
   if(save.bottle){
-    await say(n,"A water bottle! Thank you, I was so thirsty!",'¡Una botella de agua! Gracias, ¡tenía tanta sed!');
+    await say(n,"I'm still so thirsty. Do you have something for me?",'Todavía tengo tanta sed. ¿Tienes algo para mí?');
+    const ok=await openBackpack(n,'bottle');
+    if(!ok){await say(n,"This doesn't help me. I need WATER!",'Esto no me sirve. ¡Necesito AGUA!');return;}
     save.bottle=false;save.bottleGiven=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
+    await say(n,"A water bottle! Thank you, I was so thirsty!",'¡Una botella de agua! Gracias, ¡tenía tanta sed!');
     await say(n,'You may pass to the last courtyard. Good luck!','Puedes pasar al último patio. ¡Buena suerte!');
     return;
   }
@@ -1513,6 +1534,30 @@ async function askYesNo(spk,en,es,yes,no){
   const opts=[{t:yes,ok:true},{t:no,ok:false}];
   const ch={spk,en:fmt(en),es:fmt(es),t:0,len:Array.from(fmt(en)).length,opts,sel:0,disabled:new Set(),msg:'',shake:0};
   speak(ch.en);const i=await askChoice(ch);return opts[i].ok;
+}
+/* ---------- mochila / inventario ---------- */
+const ITEMS={
+  bottle:{icon:'💧',en:'Water bottle',es:'Botella de agua',have:()=>save.bottle},
+  key:{icon:'🔑',en:'Key',es:'Llave',have:()=>save.key},
+  leash:{icon:'🪢',en:'Leash',es:'Correa',have:()=>save.leash},
+  sword:{icon:'⚔️',en:'Sword',es:'Espada',have:()=>save.sword}
+};
+function myItems(){return Object.keys(ITEMS).filter(id=>ITEMS[id].have());}
+async function openBackpack(spk,correctId){
+  const ids=myItems();
+  if(!ids.length){await say(spk,"My backpack is empty right now.",'Mi mochila está vacía por ahora.');return false;}
+  const opts=ids.map(id=>({t:ITEMS[id].icon+' '+ITEMS[id].en+' / '+ITEMS[id].es,ok:id===correctId}));
+  const en='Open backpack. Which item?',es='Abre la mochila. ¿Qué objeto?';
+  const ch={spk,en,es,pic:'🎒',t:0,len:Array.from(en).length,opts,sel:0,disabled:new Set(),msg:'',shake:0};
+  const i=await askChoice(ch);return opts[i].ok;
+}
+async function useDoorItem(itemId,flag,prompt,fail){
+  if(save[flag])return true;
+  await say(PLAYER,prompt[0],prompt[1]);
+  const ok=await openBackpack(PLAYER,itemId);
+  if(!ok){await say(PLAYER,fail[0],fail[1]);return false;}
+  save[flag]=true;writeSave();sfx.star();
+  return true;
 }
 async function runBossQuiz(n,quiz){
   let lives=3;
@@ -1657,6 +1702,8 @@ async function intro(){
   await say(MASCOT,'Walk around with the arrow keys and talk to teachers and students.','Camina con las flechas y habla con los profesores y compañeros.');
   await say(MASCOT,"They will ask you questions in English. Answer them well to win STARS!",'¡Te harán preguntas en inglés! Respóndelas bien para ganar ESTRELLAS.');
   await say(MASCOT,'Get 6 stars in each courtyard to unlock the exam and reach the next level!','¡Consigue 6 estrellas en cada patio para desbloquear el examen y pasar al siguiente nivel!');
+  await say(MASCOT,"See your backpack? You'll find important things at school. Keep them safe in there!",'¿Ves tu mochila? Vas a encontrar cosas importantes en el colegio. ¡Guárdalas ahí!');
+  await say(MASCOT,'When someone needs an item, open your backpack and choose the right one to give them.','Cuando alguien necesite un objeto, abre tu mochila y elige el correcto para dárselo.');
   await say(MASCOT,'There are 5 levels, secret quests and even a final test at the end. I will help you if you press the ❓ button!','¡Hay 5 niveles, misiones secretas y hasta una prueba final! Si necesitas ayuda, presiona el botón ❓.');
   await say(MASCOT,'First, talk to Alvarin. Go, go!','Primero, habla con Alvarin. ¡Vamos!');
   writeSave();
@@ -1708,23 +1755,35 @@ async function goMap(id,x,y,dir){
   if(id==='final'&&!save.seenF){save.seenF=true;writeSave();
     await say(MASCOT,'Welcome to Level 5: the LAST courtyard!','¡Bienvenido al Nivel 5: el ÚLTIMO patio!');
     await say(MASCOT,'Two secret rooms... One door is locked. Tío Rafa\'s KEY can open it!','Dos salas secretas... Una puerta está cerrada. ¡La LLAVE del Tío Rafa puede abrirla!');
-    await say(MASCOT,'And I hear a very LOUD voice in the other room...','Y escucho una voz muy FUERTE en la otra sala...');}
+    await say(MASCOT,'The other one is chained with a padlock. You will need a SWORD to break it!','La otra está encadenada con un candado. ¡Vas a necesitar una ESPADA para romperlo!');
+    await say(MASCOT,'And I hear a very LOUD voice in that room...','Y escucho una voz muy FUERTE en esa sala...');}
 }
 function onArrive(){
   sfx.step();
   if(cur.phoneAt&&!save.phoneFound&&player.x===cur.phoneAt.x&&player.y===cur.phoneAt.y){
     runScript(()=>pickupPhone());return;
   }
+  if(cur.swordAt&&!save.sword&&player.x===cur.swordAt.x&&player.y===cur.swordAt.y){
+    runScript(()=>pickupSword());return;
+  }
   const d=cur.doors.find(d=>d.x===player.x&&d.y===player.y);
   if(!d)return;
   runScript(async()=>{
-    if(d.req&&!d.req()&&!state.cheat){
-      sfx.bad();
-      const m=d.msg();await say(PLAYER,m[0],m[1]);
+    const bounceBack=()=>{
       const b=d.back||[0,1];
       player.x=player.tx=d.x+b[0];player.y=player.ty=d.y+b[1];player.px=player.x*TS;player.py=player.y*TS;
       player.dir=b[0]<0?'left':b[0]>0?'right':'down';resetTrail();
+    };
+    if(d.req&&!d.req()&&!state.cheat){
+      sfx.bad();
+      const m=d.msg();await say(PLAYER,m[0],m[1]);
+      bounceBack();
       return;
+    }
+    if(d.itemGate&&!state.cheat){
+      const g=d.itemGate;
+      const ok=await useDoorItem(g.item,g.flag,g.prompt,g.fail);
+      if(!ok){bounceBack();return;}
     }
     await goMap(d.to,d.tx,d.ty,d.dir);
   });
@@ -1875,6 +1934,7 @@ function drawHUD(c){
   for(let i=0;i<6;i++){starPath(c,28+i*24,23,9);c.fillStyle=i<curStars()?GOLD:'rgba(255,255,255,.18)';c.fill();c.strokeStyle=i<curStars()?'#fff3a8':'rgba(255,255,255,.35)';c.lineWidth=1;c.stroke();}
   c.font=F(12,'bold');c.textAlign='center';c.textBaseline='middle';c.fillStyle=GOLD;c.fillText('LV '+Math.min(5,save.level||1),180,23.5);
   {const mtxt='💰 $'+(save.money||0),mw=c.measureText(mtxt).width+20;mvWindow(c,8,42,mw,22,11,{gems:false});c.font=F(12,'bold');c.fillStyle=GOLD;c.textAlign='left';c.textBaseline='middle';c.fillText(mtxt,18,53);}
+  if(ui.mode==='play'){const stxt='⭐ '+computeScore()+' pts',sw=c.measureText(stxt).width+18;mvWindow(c,CW-8-sw,CH-30,sw,24,12,{gems:false,shadow:false});c.font=F(13,'bold');c.fillStyle=GOLD;c.textAlign='right';c.textBaseline='middle';c.fillText(stxt,CW-17,CH-18);}
   c.font=F(13,'bold');const lab=`${cur.name} · ${cur.es}`,w=c.measureText(lab).width+26;
   mvWindow(c,CW/2-w/2+40,8,w,26,13,{gems:false});
   c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(lab,CW/2+40,21.5);
@@ -1882,7 +1942,10 @@ function drawHUD(c){
   icons.forEach((ic,i)=>{const x=CW-138+i*34,y=8;mvWindow(c,x,y,30,30,15,{gems:false});c.font=F(15);c.fillStyle='#fff';c.fillText(ic[0],x+15,y+16);hits.push({x,y,w:30,h:30,fn:ic[2]});});
   if(ui.mode==='play'){let chx=8;const chy=CH-30;
     const chip=t=>{c.font=F(13,'bold');const w=c.measureText(t).width+18;mvWindow(c,chx,chy,w,24,12,{gems:false,shadow:false});c.fillStyle='#fff';c.textAlign='left';c.textBaseline='middle';c.fillText(t,chx+9,chy+12.5);chx+=w+6;};
+    if(save.bottle)chip('💧 BOTELLA / BOTTLE');
     if(save.key)chip('🔑 LLAVE / KEY');
+    if(save.leash&&!save.dogFound)chip('🪢 CORREA / LEASH');
+    if(save.sword)chip('⚔️ ESPADA / SWORD');
     if(save.rafa===1)chip('📷 '+photoCount()+'/'+N_PHOTOS);
   }
   if(state.cheat){c.fillStyle='#e05555';rr(c,210,13,38,20,10);c.fill();c.strokeStyle='#fff';c.lineWidth=1.5;rr(c,210,13,38,20,10);c.stroke();c.font=F(11,'bold');c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText('REV',229,23.5);}
@@ -1911,6 +1974,11 @@ function drawGame(c){
     const px0=cur.phoneAt.x*TS+16,py0=cur.phoneAt.y*TS+16+Math.sin(time*5)*3;
     c.beginPath();c.arc(px0,py0,11,0,TAU);c.fillStyle='rgba(13,22,60,.85)';c.fill();c.strokeStyle=GOLD;c.lineWidth=2;c.stroke();
     c.font=F(14);c.textAlign='center';c.textBaseline='middle';c.fillText('📱',px0,py0+1);
+  }
+  if(cur.swordAt&&!save.sword){
+    const sx0=cur.swordAt.x*TS+16,sy0=cur.swordAt.y*TS+16+Math.sin(time*5)*3;
+    c.beginPath();c.arc(sx0,sy0,11,0,TAU);c.fillStyle='rgba(13,22,60,.85)';c.fill();c.strokeStyle=GOLD;c.lineWidth=2;c.stroke();
+    c.font=F(14);c.textAlign='center';c.textBaseline='middle';c.fillText('⚔️',sx0,sy0+1);
   }
   const ents=cur.npcList.filter(n=>!n.fleeing).map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
@@ -2132,9 +2200,9 @@ function drawSetup(c){
       c.font=F(18);c.fillStyle=on?NAVY:'#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(icon,x+21,424+19);
       hits.push({x,y:424,w:42,h:36,fn:()=>{L[key]=on?'none':'on';sfx.pick();}});
     };
-    accBtn(266,'🎒','backpack');accBtn(312,'🔸','freckles');accBtn(358,'💎','earrings');
+    accBtn(289,'🔸','freckles');accBtn(335,'💎','earrings');
     btn(398,422,228,42,'Listo / Done  ▶',true,()=>finishCustom());
-    c.font=F(9);c.fillStyle='rgba(255,255,255,.7)';c.textAlign='center';c.fillText('Mochila · Pecas · Aretes',332,466);
+    c.font=F(9);c.fillStyle='rgba(255,255,255,.7)';c.textAlign='center';c.fillText('Pecas · Aretes',312,466);
     c.textAlign='center';c.font=F(11);c.fillStyle='rgba(255,255,255,.8)';c.fillText('↑↓ elegir · ←→ cambiar · R girar · G al azar · Enter listo',CW/2,CH-10);
   }
 }
@@ -2369,7 +2437,8 @@ function helpHint(){
     if(!save.rafa)return['Find Tío Rafa in the Garden. He needs your help!','Busca al Tío Rafa en el jardín. ¡Necesita tu ayuda!'];
     return['Take photos of the 5 animals (dog, cat, duck, rabbit, parrot) and bring them to Tío Rafa for the KEY!','¡Sácale fotos a los 5 animales (perro, gato, pato, conejo, loro) y llévaselas al Tío Rafa por la LLAVE!'];
   }
-  if(!save.final4)return['Read the books in the Secret Library, then enter the DANGER room for your final test!','¡Lee los libros de la Biblioteca Secreta, luego entra a la sala de PELIGRO para tu prueba final!'];
+  if(!save.sword)return['Look for a sword hidden in a corner of the Garden. You will need it for the last door!','Busca una espada escondida en una esquina del jardín. ¡La vas a necesitar para la última puerta!'];
+  if(!save.final4)return['Read the books in the Secret Library, then open your backpack at the DANGER door for your final test!','¡Lee los libros de la Biblioteca Secreta, luego abre tu mochila en la puerta de PELIGRO para tu prueba final!'];
   return['You are a graduate! You finished the whole adventure!','¡Eres un egresado! ¡Terminaste toda la aventura!'];
 }
 async function sayHelp(){const [en,es]=helpHint();await say(MASCOT,en,es);}
