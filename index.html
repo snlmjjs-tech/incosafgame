@@ -120,7 +120,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,questMistakes:{},gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -1320,7 +1320,7 @@ function say(spk,en,es=''){
   });
 }
 function askChoice(ch){return new Promise(res=>{ch.resolve=res;ui.choice=ch;ui.dlg=null;ui.mode='choose';});}
-async function runQuiz(n,quiz){
+async function runQuiz(n,quiz,questId){
   for(let i=0;i<quiz.qs.length;i++){
     const q=quiz.qs[i];
     const opts=shuffle(q.opts.map((t,k)=>({t:fmt(t),ok:k===0})));
@@ -1333,6 +1333,7 @@ async function runQuiz(n,quiz){
       if(opts[idx].ok){right=idx;}
       else{
         ch.disabled.add(idx);ch.msg=q.hint;ch.shake=.35;save.mistakes++;sfx.bad();speak('Try again!');
+        if(questId){save.questMistakes=save.questMistakes||{};save.questMistakes[questId]=(save.questMistakes[questId]||0)+1;}
         ch.sel=opts.findIndex((o,k)=>!ch.disabled.has(k));
       }
     }
@@ -1371,7 +1372,7 @@ async function talkNPC(n){
   const quiz=QUIZ[n.quest];
   if(save.done[n.quest]){for(const l of n.again)await say(n,l[0],l[1]);return;}
   for(const l of n.intro)await say(n,l[0],l[1]);
-  await runQuiz(n,quiz);
+  await runQuiz(n,quiz,n.quest);
   save.done[n.quest]=true;await awardStar();
   for(const l of n.outro)await say(n,l[0],l[1]);
   const lv=QLEVEL[n.quest];
@@ -1710,9 +1711,15 @@ if(FIREBASE_CONFIG&&typeof firebase!=='undefined'){
   try{firebase.initializeApp(FIREBASE_CONFIG);fsDb=firebase.firestore();}catch(e){}
 }
 function computeScore(){
-  const stars=starsOf(1)+starsOf(2)+starsOf(3);
-  const base=Math.round((stars/18)*100);
-  return Math.max(0,Math.min(100,base-(save.mistakes||0)*3));
+  const quests=[...LV[1],...LV[2],...LV[3]];
+  const maxPer=100/quests.length;
+  let total=0;
+  for(const q of quests){
+    if(!save.done[q])continue;
+    const mist=(save.questMistakes&&save.questMistakes[q])||0;
+    total+=Math.max(0,maxPer-mist*(maxPer*.25));
+  }
+  return Math.max(0,Math.min(100,Math.round(total)));
 }
 function submitScore(){
   if(!fsDb)return;
