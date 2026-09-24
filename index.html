@@ -1405,6 +1405,7 @@ async function awardStar(){
 }
 async function talkNPC(n){
   n.dir=OPP[player.dir];
+  if(state.npcTest){await say(n,'Hi!','¡Hola!');return;}
   if(n.animal){
     if(n.id==='dog'){
       if(save.vitokoAsked&&!save.dogFound&&!save.dogGiven)return fetchDog(n);
