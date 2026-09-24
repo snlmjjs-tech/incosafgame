@@ -1560,33 +1560,56 @@ async function talkBoss(n){
 async function ending(){
   writeSave();
   submitScore();
+  fetchLeaderboard();
   await fadeTo(1);
   certKind='final';scene='end';endT=0;parts.length=0;sfx.win();speak('Congratulations! You learned English at school!');
   await fadeTo(0);
 }
 /* ---------- puntaje del curso (opcional) ----------
    Para que los resultados de tus alumnos queden guardados en una planilla
-   que tú puedas revisar, sigue estos pasos (toma ~5 minutos):
+   que tú puedas revisar (y para mostrarles un ranking con los mejores
+   puntajes de todos los cursos al terminar el juego), sigue estos pasos
+   (toma ~5 minutos):
    1. Crea una Hoja de cálculo nueva en Google Sheets.
    2. Menú Extensiones → Apps Script. Borra el código de ejemplo y pega esto:
 
       function doPost(e){
         const sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
         const d = JSON.parse(e.postData.contents);
-        sh.appendRow([new Date(), d.name, d.course, d.stars, d.maxStars, d.mistakes]);
+        sh.appendRow([new Date(), d.name, d.course, d.stars, d.maxStars, d.mistakes, d.score]);
         return ContentService.createTextOutput('ok');
+      }
+      function doGet(e){
+        const sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+        const rows = sh.getDataRange().getValues();
+        const top = rows
+          .map(r=>({name:r[1], course:r[2], score:r[6]}))
+          .filter(r=>r.name && typeof r.score==='number')
+          .sort((a,b)=>b.score-a.score)
+          .slice(0,10);
+        return ContentService.createTextOutput(JSON.stringify(top)).setMimeType(ContentService.MimeType.JSON);
       }
 
    3. Implementar → Nueva implementación → tipo "Aplicación web".
       Ejecutar como: Yo. Quién tiene acceso: Cualquier usuario.
    4. Copia la URL que te entrega (termina en /exec) y pégala abajo en
       SCORE_ENDPOINT, entre las comillas.
-   5. Sube el archivo actualizado a tu página web. Cada vez que un alumno
-      termine el juego (pase la prueba final), su nombre, curso y puntaje
-      se agregarán como una fila nueva a tu planilla, automáticamente.
+   5. Sube el archivo actualizado a tu página web (o simplemente comparte
+      el link de GitHub Pages, que se actualiza solo). Cada vez que un
+      alumno termine el juego (pase la prueba final), su nombre, curso y
+      puntaje se agregarán como una fila nueva a tu planilla, y además
+      verá una pantalla con el ranking de los mejores puntajes de todos
+      los cursos.
+   El puntaje va de 0 a 100: empieza en 100 y se descuentan 3 puntos por
+   cada error que cometas durante todo el juego (ver computeScore()).
    Mientras SCORE_ENDPOINT esté vacío, el juego funciona igual, solo que
-   no envía nada a ningún lado. */
+   no envía ni muestra nada de esto. */
 const SCORE_ENDPOINT='https://script.google.com/macros/s/AKfycbzcyL1vYzMvQiVaAUJlUlSJ3jB7EZZZeBwUevPYxaehfOT91hmwsEx8hXZFjICtRZ-aEg/exec';
+function computeScore(){
+  const stars=starsOf(1)+starsOf(2)+starsOf(3);
+  const base=Math.round((stars/18)*100);
+  return Math.max(0,Math.min(100,base-(save.mistakes||0)*3));
+}
 function submitScore(){
   if(!SCORE_ENDPOINT)return;
   try{
@@ -1599,10 +1622,20 @@ function submitScore(){
         course:save.course||'',
         stars:starsOf(1)+starsOf(2)+starsOf(3),
         maxStars:18,
-        mistakes:save.mistakes||0
+        mistakes:save.mistakes||0,
+        score:computeScore()
       })
     }).catch(()=>{});
   }catch(e){}
+}
+let leaderboard=null,leaderboardStatus='idle';
+function fetchLeaderboard(){
+  if(!SCORE_ENDPOINT){leaderboardStatus='error';return;}
+  leaderboardStatus='loading';
+  fetch(SCORE_ENDPOINT).then(r=>r.json()).then(d=>{
+    leaderboard=Array.isArray(d)?d.slice().sort((a,b)=>(b.score||0)-(a.score||0)):[];
+    leaderboardStatus='ok';
+  }).catch(()=>{leaderboardStatus='error';});
 }
 async function intro(){
   save.intro=true;
@@ -1953,9 +1986,32 @@ function drawEnd(c){
   for(let i=0;i<6;i++){starPath(c,tx-60+i*24,306,10);c.fillStyle=GOLD;c.fill();c.strokeStyle='#b8860b';c.lineWidth=1.5;c.stroke();}
   c.font=F(13);c.fillStyle='#444';c.fillText(`Mistakes / Errores: ${save.mistakes}`,tx,336);
   c.fillText(new Date().toLocaleDateString('es-CL',{day:'numeric',month:'long',year:'numeric'}),tx,358);
+  if(certKind==='final'){c.font=F(15,'bold');c.fillStyle='#b8860b';c.fillText(`⭐ Puntaje / Score: ${computeScore()} / 100`,tx,376);}
   c.font=F(13,'bold');c.fillStyle=NAVY;c.fillText('INCOSAF',316,398);
   drawParts(c);
-  if(Math.floor(time*2)%2===0){c.font=F(14,'bold');c.fillStyle='#fff';c.fillText(certResolve?'Enter / toca la pantalla para continuar':'Enter / toca la pantalla para volver al inicio',CW/2,CH-16);}
+  if(Math.floor(time*2)%2===0){c.font=F(14,'bold');c.fillStyle='#fff';c.fillText(certResolve?'Enter / toca la pantalla para continuar':(certKind==='final'&&leaderboardStatus==='ok'&&leaderboard&&leaderboard.length?'Enter / toca la pantalla para ver el ranking':'Enter / toca la pantalla para volver al inicio'),CW/2,CH-16);}
+}
+function drawBoard(c){
+  const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0d1740');g.addColorStop(.6,'#1f3a8f');g.addColorStop(1,'#132a70');c.fillStyle=g;c.fillRect(0,0,CW,CH);
+  for(let i=0;i<40;i++){const x=hash(i,7,1)*CW,y=hash(i,8,1)*CH,tw=.5+.5*Math.sin(time*2+i);c.globalAlpha=.2+.5*tw;c.fillStyle='#fff';c.fillRect(x,y,2,2);}
+  c.globalAlpha=1;
+  c.textAlign='center';c.textBaseline='middle';
+  c.font=F(28,'bold');c.fillStyle=GOLD;c.fillText('🏆 Mejores puntajes',CW/2,44);
+  c.font=F(13,'italic');c.fillStyle='#ffe27a';c.fillText('Top scores de todos los cursos',CW/2,70);
+  const rows=(leaderboard||[]).slice(0,10);
+  const x0=90,y0=96,rw=460,rh=32;
+  rows.forEach((r,i)=>{
+    const y=y0+i*rh,mine=r.name===save.name&&r.course===save.course;
+    c.fillStyle=mine?'rgba(255,226,122,.24)':(i%2===0?'rgba(255,255,255,.06)':'rgba(255,255,255,.02)');
+    rr(c,x0,y,rw,rh-4,8);c.fill();
+    if(mine){c.strokeStyle=GOLD;c.lineWidth=2;rr(c,x0,y,rw,rh-4,8);c.stroke();}
+    c.textAlign='left';c.font=F(14,'bold');c.fillStyle=i<3?GOLD:'#fff';c.fillText('#'+(i+1),x0+14,y+14);
+    c.font=F(13,'bold');c.fillStyle='#fff';c.fillText(String(r.name||'?').slice(0,16),x0+56,y+12);
+    c.font=F(10,'italic');c.fillStyle='#b9c3ea';c.fillText(String(r.course||'').slice(0,22),x0+56,y+25);
+    c.textAlign='right';c.font=F(16,'bold');c.fillStyle=GOLD;c.fillText((r.score!=null?r.score:'-')+' pts',x0+rw-14,y+14);
+  });
+  if(!rows.length){c.textAlign='center';c.font=F(15);c.fillStyle='#fff';c.fillText('Aún no hay puntajes guardados.',CW/2,240);}
+  if(Math.floor(time*2)%2===0){c.font=F(14,'bold');c.fillStyle='#fff';c.textAlign='center';c.fillText('Enter / toca la pantalla para volver al inicio',CW/2,CH-16);}
 }
 function drawSetup(c){
   const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0d1740');g.addColorStop(.6,'#1f3a8f');g.addColorStop(1,'#132a70');c.fillStyle=g;c.fillRect(0,0,CW,CH);
@@ -2151,6 +2207,7 @@ function render(){
   else if(scene==='settings'){drawGame(c);drawSettings(c);}
   else if(scene==='book')drawBook(c);
   else if(scene==='end')drawEnd(c);
+  else if(scene==='board')drawBoard(c);
   else drawGame(c);
   drawOverlays(c);
   if(ui.fade>0){c.globalAlpha=Math.min(1,ui.fade);c.fillStyle='#000';c.fillRect(0,0,CW,CH);c.globalAlpha=1;}
@@ -2369,8 +2426,10 @@ function confirmAction(){
   if(scene==='end'){
     if(endT<1.8)return;
     if(certResolve){const r=certResolve;certResolve=null;(async()=>{await fadeTo(1);scene='game';parts.length=0;held.length=0;await fadeTo(0);r();})();return;}
+    if(certKind==='final'&&leaderboardStatus==='ok'&&leaderboard&&leaderboard.length){scene='board';return;}
     scene='title';hasSave=!!loadSave();titleSel=0;parts.length=0;held.length=0;return;
   }
+  if(scene==='board'){scene='title';hasSave=!!loadSave();titleSel=0;parts.length=0;held.length=0;return;}
   if(ui.mode==='say'&&ui.dlg){const d=ui.dlg;if(d.t<d.len){d.t=d.len;}else{ui.dlg=null;d.resolve();}return;}
   if(ui.mode==='choose'&&ui.choice){const ch=ui.choice;if(ch.t<ch.len){ch.t=ch.len;return;}if(ch.disabled.has(ch.sel))return;const r=ch.resolve;r&&r(ch.sel);return;}
   if(ui.mode==='play'&&!ui.locked&&!player.moving&&ui.fade<.3)interact();
@@ -2429,7 +2488,7 @@ function toCanvas(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.le
 cv.addEventListener('pointerdown',e=>{
   initAudio();const p=toCanvas(e);
   for(let i=hits.length-1;i>=0;i--){const h=hits[i];if(p.x>=h.x&&p.x<=h.x+h.w&&p.y>=h.y&&p.y<=h.y+h.h){h.fn();return;}}
-  if(scene==='end'||(scene==='game'&&ui.mode==='say'))confirmAction();
+  if(scene==='end'||scene==='board'||(scene==='game'&&ui.mode==='say'))confirmAction();
 });
 cv.addEventListener('pointermove',e=>{
   if(e.pointerType!=='mouse')return;const p=toCanvas(e);
