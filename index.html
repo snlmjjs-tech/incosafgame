@@ -120,7 +120,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -336,6 +336,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
     prompt:['This padlock looks tough. Let me check my backpack...','Este candado se ve difícil. Déjame revisar mi mochila...'],
     fail:["This won't break the padlock...",'Esto no rompe el candado...']};
   MAPS.garden.swordAt={x:17,y:3};
+  MAPS.patio.coins=[{x:6,y:6}];MAPS.plaza.coins=[{x:8,y:3}];MAPS.cafe.coins=[{x:16,y:10}];
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');
   MAPS.plaza.npcs.push('mia','vitoko');MAPS.computer.phoneAt={x:10,y:9};
   for(const m of Object.values(MAPS))if(!m.theme)m.theme=1;
@@ -484,8 +485,7 @@ const NPCS={
    intro:[['Welcome to the cafeteria! I am the Chef.','¡Bienvenido a la cafetería! Soy el chef.'],['Are you hungry? Tell me about food!','¿Tienes hambre? ¡Cuéntame sobre la comida!']],
    outro:[['Delicious! You know your food. Here is a star.','¡Delicioso! Sabes de comida. Aquí tienes una estrella.']],
    again:[['Come back for lunch anytime!','¡Vuelve a almorzar cuando quieras!']]},
- kid:{name:'Kid',x:6,y:5,dir:'right',look:LOOK.kid,
-   talk:()=>[['Mmm, this lunch is so good!','¡Mmm, este almuerzo está muy rico!'],['I like pizza. Do you like pizza?','Me gusta la pizza. ¿A ti te gusta?']]},
+ kid:{name:'Kid',x:6,y:5,dir:'right',look:LOOK.kid,exam:n=>talkKid(n)},
  principal:{name:'Teacher Seba',x:9,y:4,dir:'down',look:LOOK.principal,exam:n=>talkPrincipal(n),
    mark:()=>save.final3?2:(save.final1?((save.level>=3&&starsOf(3)>=6)?1:0):(starsOf(1)>=6?1:0))}
 };
@@ -923,7 +923,7 @@ function shoeS(c,x,y,col){RR(c,x-1.6,y,8,4,1.9,col);c.fillStyle='rgba(255,255,25
 function glassesF(c,L){const B=L&&L.glasses==='bold',S=L&&L.glasses==='sun';c.strokeStyle=S?'#111':(B?'#0a0a0e':'#2a2a34');c.lineWidth=B||S?1.7:.9;for(const sx of [-1,1]){c.fillStyle=S?'rgba(20,20,28,.88)':'rgba(190,225,255,.22)';c.beginPath();c.arc(sx*3.8,-33.4,3.5,0,TAU);c.fill();c.stroke();if(S){c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.ellipse(sx*3.8-1,-34.4,1,.6,-.4,0,TAU);c.fill();}}c.beginPath();c.moveTo(-.4,-33.6);c.lineTo(.4,-33.6);c.moveTo(-7.3,-33.8);c.lineTo(-9.2,-34.4);c.moveTo(7.3,-33.8);c.lineTo(9.2,-34.4);c.stroke();}
 
 let _pOutC=null,_pOutS=null,_pOutH=null;
-function drawPersonOutlined(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
+function drawPersonOutlined(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0,sword=false){
   const xHalf=18*s,yTop=66*s,yBot=10*s;
   const w=Math.ceil(xHalf*2+4),h=Math.ceil(yTop+yBot+4);
   if(!_pOutC){_pOutC=document.createElement('canvas');_pOutS=document.createElement('canvas');_pOutH=document.createElement('canvas');}
@@ -932,7 +932,7 @@ function drawPersonOutlined(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
   octx.clearRect(0,0,w,h);
   const ox0=xHalf+2,oy0=yTop+2;
   octx.save();octx.translate(ox0,oy0);
-  drawPerson(octx,0,0,s,L0,dir,bob,false,walk);
+  drawPerson(octx,0,0,s,L0,dir,bob,false,walk,sword);
   octx.restore();
   sctx.clearRect(0,0,w,h);
   sctx.drawImage(_pOutC,0,0);
@@ -956,7 +956,7 @@ function drawPersonOutlined(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
   c.drawImage(_pOutC,dx0,dy0);
   c.drawImage(_pOutH,dx0,dy0);
 }
-function drawPerson(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
+function drawPerson(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0,sword=false){
   const L=normLook(L0),sk=L.skin,skd=sh(sk,-.1),fem=L.g==='f';
   const bw=[.9,1,1.14][L.build==null?1:L.build]||1;
   c.save();c.translate(cx,fy-bob);c.scale(s,s);
@@ -1042,7 +1042,7 @@ function drawPerson(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
       if(L.glasses&&L.glasses!=='none')glassesF(c,L);
     }
     hairFront(c,L,dir);
-    accessories(c,L,dir);
+    accessories(c,L,dir,sword);
   }else{
     /* ---- vista lateral (mirando a la derecha; 'left' va espejado) ---- */
     const lw=4.3*bw,bx=-2.1;
@@ -1081,11 +1081,11 @@ function drawPerson(c,cx,fy,s,L0,dir,bob=0,shadow=true,walk=0){
       if(L.glasses&&L.glasses!=='none'){const S=L.glasses==='sun';c.strokeStyle=S?'#111':(L.glasses==='bold'?'#0a0a0e':'#2a2a34');c.lineWidth=(L.glasses==='bold'||S)?1.7:.9;c.fillStyle=S?'rgba(20,20,28,.88)':'rgba(190,225,255,.22)';c.beginPath();c.arc(ex+.2,ey+.1,3.4,0,TAU);c.fill();c.stroke();c.beginPath();c.moveTo(ex-3.2,ey);c.lineTo(-1.4,-34.4);c.stroke();}
     }
     hairFront(c,L,dir);
-    accessories(c,L,dir);
+    accessories(c,L,dir,sword);
   }
   c.restore();
 }
-function accessories(c,L,dir){
+function accessories(c,L,dir,sword=false){
   const side=(dir==='left'||dir==='right');
   if(L.freckles==='on'&&!side&&dir!=='up'){
     c.fillStyle='rgba(150,90,50,.55)';
@@ -1108,6 +1108,28 @@ function accessories(c,L,dir){
       c.strokeStyle=bp;c.lineWidth=2.4;c.lineCap='round';
       c.beginPath();c.moveTo(-4.6,-26.5);c.lineTo(-3,-19);c.moveTo(4.6,-26.5);c.lineTo(3,-19);c.stroke();
       c.lineCap='butt';
+    }
+  }
+  if(sword){
+    const hilt='#f2c33d',blade='#d8dee6',guard='#8a8f9c';
+    if(dir==='up'){
+      c.save();c.translate(6.6,-30);c.rotate(-.34);
+      RR(c,-1.4,-2,2.8,17,1.2,blade);
+      RR(c,-2.6,14.4,5.2,1.8,.7,guard);
+      RR(c,-1.1,15.8,2.2,5.4,1,hilt);
+      c.restore();
+    }else if(side){
+      c.save();c.translate(-3.4,-30);c.rotate(.5);
+      RR(c,-1.3,-2,2.6,16,1.1,blade);
+      RR(c,-2.4,13.6,4.8,1.7,.7,guard);
+      RR(c,-1,15,2,5,1,hilt);
+      c.restore();
+    }else{
+      c.save();c.translate(6.4,-29.6);c.rotate(.3);
+      RR(c,-1.4,-2,2.8,16.6,1.2,blade);
+      RR(c,-2.6,14,5.2,1.8,.7,guard);
+      RR(c,-1.1,15.4,2.2,5.2,1,hilt);
+      c.restore();
     }
   }
   if(L.style==='cap'){
@@ -1144,7 +1166,7 @@ function followerPos(need=30){
 function drawPlayer(c){
   const bob=player.moving?Math.abs(Math.sin(player.anim))*2:Math.sin(time*2.2)*.5;
   const walk=player.moving?Math.sin(player.anim*1.6):0;
-  drawPersonOutlined(c,player.px+TS/2,player.py+TS-1,1,PLAYER.look,player.dir,bob,true,walk);
+  drawPersonOutlined(c,player.px+TS/2,player.py+TS-1,1,PLAYER.look,player.dir,bob,true,walk,!!save.sword);
 }
 let _mOutC=null,_mOutS=null;
 function drawImageOutlined(c,img,cx,groundY,w,h,flip){
@@ -1484,6 +1506,12 @@ async function pickupSword(){
   await say(PLAYER,'An old sword, hidden in the corner!','¡Una espada vieja, escondida en la esquina!');
   await say(PLAYER,'This could help me break something later...','Esto podría ayudarme a romper algo más tarde...');
 }
+async function pickupCoin(cn){
+  const key=cur.id+':'+cn.x+','+cn.y;
+  save.coins=save.coins||{};save.coins[key]=true;
+  save.money=(save.money||0)+10;writeSave();sfx.star();burst(player.px+16,player.py+10);
+  await say(PLAYER,'A shiny coin! +$10','¡Una moneda brillante! +$10');
+}
 async function talkVitoko(n){
   if(save.dogGiven){await say(n,'Thank you again for bringing back my dog, {n}!','¡Gracias de nuevo por traer a mi perro, {n}!');return;}
   if(save.dogFound){
@@ -1515,6 +1543,13 @@ async function talkKiosk(n){
   save.money-=20;save.bottle=true;writeSave();sfx.star();burst(player.px+16,player.py+10);
   await say(n,'Here is your water bottle!','¡Aquí está tu botella de agua!');
 }
+async function talkKid(n){
+  if(save.apple){await say(n,'Enjoy the apple! Or... maybe not.','¡Disfruta la manzana! O tal vez no.');return;}
+  await say(n,'Mmm, this lunch is so good!','¡Mmm, este almuerzo está muy rico!');
+  await say(n,"Hey, want my apple? I don't like it, it looks kinda weird...",'Oye, ¿quieres mi manzana? No me gusta, se ve rara...');
+  save.apple=true;writeSave();sfx.pick();burst(player.px+16,player.py+10);
+  await say(n,'Here you go! Totally not rotten, I promise.','¡Toma! No está para nada podrida, lo prometo.');
+}
 async function talkGateGuard(n){
   if(save.bottleGiven){await say(n,'Thanks again for the water! Go ahead.','¡Gracias de nuevo por el agua! Adelante.');return;}
   if(save.bottle){
@@ -1540,12 +1575,23 @@ const ITEMS={
   bottle:{icon:'💧',en:'Water bottle',es:'Botella de agua',have:()=>save.bottle},
   key:{icon:'🔑',en:'Key',es:'Llave',have:()=>save.key},
   leash:{icon:'🪢',en:'Leash',es:'Correa',have:()=>save.leash},
-  sword:{icon:'⚔️',en:'Sword',es:'Espada',have:()=>save.sword}
+  sword:{icon:'⚔️',en:'Sword',es:'Espada',have:()=>save.sword},
+  apple:{icon:'🍎',en:'Rotten apple',es:'Manzana podrida',have:()=>save.apple}
 };
 function myItems(){return Object.keys(ITEMS).filter(id=>ITEMS[id].have());}
+const EMPTY_BP_LINES={
+  'Gate Guard':["Empty backpack? Ha! Go find that water somewhere else.",'¿Mochila vacía? ¡Ja! Ve a buscar esa agua a otro lado.'],
+  'Tío Rafa':["Nothing in there yet? Take some photos first, {n}!",'¿Nada ahí todavía? ¡Saca fotos primero, {n}!'],
+  'Vitoko':["Empty? Please hurry, my dog needs that leash!",'¿Vacía? ¡Apúrate, mi perro necesita esa correa!']
+};
 async function openBackpack(spk,correctId){
   const ids=myItems();
-  if(!ids.length){await say(spk,"My backpack is empty right now.",'Mi mochila está vacía por ahora.');return false;}
+  if(!ids.length){
+    const nm=spk&&spk.name,L=EMPTY_BP_LINES[nm];
+    if(L)await say(spk,L[0],L[1]);
+    else await say(spk,"Your backpack is empty. Better go find something useful!",'Tu mochila está vacía. ¡Mejor ve a buscar algo útil!');
+    return false;
+  }
   const opts=ids.map(id=>({t:ITEMS[id].icon+' '+ITEMS[id].en+' / '+ITEMS[id].es,ok:id===correctId}));
   const en='Open backpack. Which item?',es='Abre la mochila. ¿Qué objeto?';
   const ch={spk,en,es,pic:'🎒',t:0,len:Array.from(en).length,opts,sel:0,disabled:new Set(),msg:'',shake:0};
@@ -1708,8 +1754,45 @@ async function intro(){
   await say(MASCOT,'First, talk to Alvarin. Go, go!','Primero, habla con Alvarin. ¡Vamos!');
   writeSave();
 }
+const MEMORY_PAIRS=[
+  {icon:'📖',en:'Book',es:'Libro'},
+  {icon:'🖊️',en:'Pen',es:'Lápiz pasta'},
+  {icon:'🎒',en:'Backpack',es:'Mochila'}
+];
+async function memoryGame(){
+  const deck=[];
+  MEMORY_PAIRS.forEach((p,i)=>{deck.push(i,i);});
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  const found=new Set();
+  await say(MASCOT,"Before you read, let's play a memory game! Match the vocabulary pairs.",'¡Antes de leer, juguemos un juego de memoria! Empareja las palabras.');
+  while(found.size<deck.length){
+    const remaining=deck.map((v,i)=>i).filter(i=>!found.has(i));
+    const opts1=remaining.map(i=>({t:'Card '+(i+1)+' / Carta '+(i+1),ok:true}));
+    const en1='Pick the first card.',es1='Elige la primera carta.';
+    const ch1={spk:MASCOT,en:en1,es:es1,pic:'🃏',t:0,len:Array.from(en1).length,opts:opts1,sel:0,disabled:new Set(),msg:'',shake:0};
+    const first=remaining[await askChoice(ch1)];
+    await say(MASCOT,MEMORY_PAIRS[deck[first]].icon+' '+MEMORY_PAIRS[deck[first]].en,MEMORY_PAIRS[deck[first]].icon+' '+MEMORY_PAIRS[deck[first]].es);
+    const remaining2=remaining.filter(i=>i!==first);
+    const opts2=remaining2.map(i=>({t:'Card '+(i+1)+' / Carta '+(i+1),ok:true}));
+    const en2='Pick the second card.',es2='Elige la segunda carta.';
+    const ch2={spk:MASCOT,en:en2,es:es2,pic:'🃏',t:0,len:Array.from(en2).length,opts:opts2,sel:0,disabled:new Set(),msg:'',shake:0};
+    const second=remaining2[await askChoice(ch2)];
+    await say(MASCOT,MEMORY_PAIRS[deck[second]].icon+' '+MEMORY_PAIRS[deck[second]].en,MEMORY_PAIRS[deck[second]].icon+' '+MEMORY_PAIRS[deck[second]].es);
+    if(deck[first]===deck[second]){
+      found.add(first);found.add(second);sfx.star();
+      await say(MASCOT,'Match! Great memory!','¡Pareja! ¡Buena memoria!');
+    }else{
+      await say(MASCOT,'No match, try to remember!','No es pareja, ¡intenta recordar!');
+    }
+  }
+  save.money=(save.money||0)+15;writeSave();sfx.star();
+  await say(MASCOT,'You matched them all! Here is $15 for your great memory.','¡Emparejaste todo! Aquí tienes $15 por tu buena memoria.');
+}
 async function tileTalk(ch,x,y){
-  if(cur.books&&cur.books[x+','+y]){await readBook(cur.books[x+','+y]);return;}
+  if(cur.books&&cur.books[x+','+y]){
+    if(!save.memoryDone){save.memoryDone=true;writeSave();await memoryGame();}
+    await readBook(cur.books[x+','+y]);return;
+  }
   const lines=(cur.tileTalk&&cur.tileTalk[ch])||TILE_TALK[ch];const k=cur.id+ch;
   talkIdx[k]=((talkIdx[k]||0)+1)%lines.length;
   const l=lines[talkIdx[k]];
@@ -1765,6 +1848,10 @@ function onArrive(){
   }
   if(cur.swordAt&&!save.sword&&player.x===cur.swordAt.x&&player.y===cur.swordAt.y){
     runScript(()=>pickupSword());return;
+  }
+  if(cur.coins){
+    const co=cur.coins.find(cn=>cn.x===player.x&&cn.y===player.y&&!(save.coins||{})[cur.id+':'+cn.x+','+cn.y]);
+    if(co){runScript(()=>pickupCoin(co));return;}
   }
   const d=cur.doors.find(d=>d.x===player.x&&d.y===player.y);
   if(!d)return;
@@ -1946,6 +2033,7 @@ function drawHUD(c){
     if(save.key)chip('🔑 LLAVE / KEY');
     if(save.leash&&!save.dogFound)chip('🪢 CORREA / LEASH');
     if(save.sword)chip('⚔️ ESPADA / SWORD');
+    if(save.apple)chip('🍎 MANZANA / APPLE');
     if(save.rafa===1)chip('📷 '+photoCount()+'/'+N_PHOTOS);
   }
   if(state.cheat){c.fillStyle='#e05555';rr(c,210,13,38,20,10);c.fill();c.strokeStyle='#fff';c.lineWidth=1.5;rr(c,210,13,38,20,10);c.stroke();c.font=F(11,'bold');c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText('REV',229,23.5);}
@@ -1979,6 +2067,14 @@ function drawGame(c){
     const sx0=cur.swordAt.x*TS+16,sy0=cur.swordAt.y*TS+16+Math.sin(time*5)*3;
     c.beginPath();c.arc(sx0,sy0,11,0,TAU);c.fillStyle='rgba(13,22,60,.85)';c.fill();c.strokeStyle=GOLD;c.lineWidth=2;c.stroke();
     c.font=F(14);c.textAlign='center';c.textBaseline='middle';c.fillText('⚔️',sx0,sy0+1);
+  }
+  if(cur.coins){
+    for(const cn of cur.coins){
+      if((save.coins||{})[cur.id+':'+cn.x+','+cn.y])continue;
+      const cx0=cn.x*TS+16,cy0=cn.y*TS+16+Math.sin(time*5+cn.x)*3;
+      c.beginPath();c.arc(cx0,cy0,9,0,TAU);c.fillStyle=GOLD;c.fill();c.strokeStyle='#a67a00';c.lineWidth=1.6;c.stroke();
+      c.font=F(11,'bold');c.textAlign='center';c.textBaseline='middle';c.fillStyle='#7a5900';c.fillText('$',cx0,cy0+1);
+    }
   }
   const ents=cur.npcList.filter(n=>!n.fleeing).map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
