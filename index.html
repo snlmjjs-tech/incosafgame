@@ -42,6 +42,8 @@ body.touch #pad{display:flex}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -1565,76 +1567,79 @@ async function ending(){
   certKind='final';scene='end';endT=0;parts.length=0;sfx.win();speak('Congratulations! You learned English at school!');
   await fadeTo(0);
 }
-/* ---------- puntaje del curso (opcional) ----------
-   Para que los resultados de tus alumnos queden guardados en una planilla
-   que tú puedas revisar (y para mostrarles un ranking con los mejores
-   puntajes de todos los cursos al terminar el juego), sigue estos pasos
-   (toma ~5 minutos):
-   1. Crea una Hoja de cálculo nueva en Google Sheets.
-   2. Menú Extensiones → Apps Script. Borra el código de ejemplo y pega esto:
+/* ---------- puntaje del curso (opcional, con Firebase) ----------
+   Para que los resultados de tus alumnos queden guardados y se les
+   muestre un ranking con los mejores puntajes de todos los cursos al
+   terminar el juego, sigue estos pasos (toma ~5 minutos):
+   1. Ve a https://console.firebase.google.com/ → "Agregar proyecto" →
+      dale un nombre (puedes desactivar Google Analytics) → Crear proyecto.
+   2. En el menú izquierdo: Compilación → Firestore Database →
+      "Crear base de datos" → modo producción → elige una región cercana
+      (ej. southamerica-east1) → Habilitar.
+   3. Pestaña "Reglas" (arriba, junto a "Datos") → reemplaza todo por:
 
-      function doPost(e){
-        const sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        const d = JSON.parse(e.postData.contents);
-        sh.appendRow([new Date(), d.name, d.course, d.stars, d.maxStars, d.mistakes, d.score]);
-        return ContentService.createTextOutput('ok');
-      }
-      function doGet(e){
-        const sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-        const rows = sh.getDataRange().getValues();
-        const top = rows
-          .map(r=>({name:r[1], course:r[2], score:r[6]}))
-          .filter(r=>r.name && typeof r.score==='number')
-          .sort((a,b)=>b.score-a.score)
-          .slice(0,10);
-        return ContentService.createTextOutput(JSON.stringify(top)).setMimeType(ContentService.MimeType.JSON);
+      rules_version = '2';
+      service cloud.firestore {
+        match /databases/{database}/documents {
+          match /scores/{scoreId} {
+            allow read: if true;
+            allow create: if true;
+            allow update, delete: if false;
+          }
+        }
       }
 
-   3. Implementar → Nueva implementación → tipo "Aplicación web".
-      Ejecutar como: Yo. Quién tiene acceso: Cualquier usuario.
-   4. Copia la URL que te entrega (termina en /exec) y pégala abajo en
-      SCORE_ENDPOINT, entre las comillas.
-   5. Sube el archivo actualizado a tu página web (o simplemente comparte
-      el link de GitHub Pages, que se actualiza solo). Cada vez que un
-      alumno termine el juego (pase la prueba final), su nombre, curso y
-      puntaje se agregarán como una fila nueva a tu planilla, y además
-      verá una pantalla con el ranking de los mejores puntajes de todos
-      los cursos.
+      y clic en "Publicar".
+   4. Configuración del proyecto (ícono de engranaje, arriba a la
+      izquierda) → "Configuración del proyecto" → baja a "Tus apps" →
+      clic en el ícono </> (Web) → dale un apodo → "Registrar app"
+      (no hace falta activar Hosting).
+   5. Te va a mostrar un bloque `const firebaseConfig = {...}`. Copia
+      ESE objeto completo (con las llaves { }) y pégalo abajo en
+      FIREBASE_CONFIG, reemplazando el "null".
+   6. Sube el archivo actualizado a tu página web (o simplemente
+      comparte el link de GitHub Pages, que se actualiza solo). Cada
+      vez que un alumno termine el juego, su nombre, curso y puntaje se
+      guardan en Firestore, y verá una pantalla con el ranking de los
+      mejores puntajes de todos los cursos.
    El puntaje va de 0 a 100: empieza en 100 y se descuentan 3 puntos por
    cada error que cometas durante todo el juego (ver computeScore()).
-   Mientras SCORE_ENDPOINT esté vacío, el juego funciona igual, solo que
-   no envía ni muestra nada de esto. */
-const SCORE_ENDPOINT='https://script.google.com/macros/s/AKfycbzcyL1vYzMvQiVaAUJlUlSJ3jB7EZZZeBwUevPYxaehfOT91hmwsEx8hXZFjICtRZ-aEg/exec';
+   Mientras FIREBASE_CONFIG sea null, el juego funciona igual, solo que
+   no guarda ni muestra nada de esto. */
+const FIREBASE_CONFIG=null;
+let fsDb=null;
+if(FIREBASE_CONFIG&&typeof firebase!=='undefined'){
+  try{firebase.initializeApp(FIREBASE_CONFIG);fsDb=firebase.firestore();}catch(e){}
+}
 function computeScore(){
   const stars=starsOf(1)+starsOf(2)+starsOf(3);
   const base=Math.round((stars/18)*100);
   return Math.max(0,Math.min(100,base-(save.mistakes||0)*3));
 }
 function submitScore(){
-  if(!SCORE_ENDPOINT)return;
+  if(!fsDb)return;
   try{
-    fetch(SCORE_ENDPOINT,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({
-        name:save.name||'',
-        course:save.course||'',
-        stars:starsOf(1)+starsOf(2)+starsOf(3),
-        maxStars:18,
-        mistakes:save.mistakes||0,
-        score:computeScore()
-      })
+    fsDb.collection('scores').add({
+      name:save.name||'',
+      course:save.course||'',
+      stars:starsOf(1)+starsOf(2)+starsOf(3),
+      maxStars:18,
+      mistakes:save.mistakes||0,
+      score:computeScore(),
+      date:firebase.firestore.FieldValue.serverTimestamp()
     }).catch(()=>{});
   }catch(e){}
 }
 let leaderboard=null,leaderboardStatus='idle';
 function fetchLeaderboard(){
-  if(!SCORE_ENDPOINT){leaderboardStatus='off';return;}
+  if(!fsDb){leaderboardStatus='off';return;}
   leaderboardStatus='loading';
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),9000));
-  Promise.race([fetch(SCORE_ENDPOINT).then(r=>r.json()),timeout]).then(d=>{
-    leaderboard=Array.isArray(d)?d.slice().sort((a,b)=>(b.score||0)-(a.score||0)):[];
+  Promise.race([
+    fsDb.collection('scores').orderBy('score','desc').limit(10).get().then(snap=>snap.docs.map(d=>d.data())),
+    timeout
+  ]).then(d=>{
+    leaderboard=Array.isArray(d)?d:[];
     leaderboardStatus='ok';
   }).catch(()=>{leaderboardStatus='error';});
 }
