@@ -512,7 +512,7 @@ async function npcTestSkip(n){
 }
 async function talkEmmaBonus(n){
   if(save.done.emmaBonus){await say(n,'Reading is fun! See you around.','¡Leer es divertido! Nos vemos.');return;}
-  if(await npcTestSkip(n))return;
+  if(await npcTestSkip(n)){save.done.emmaBonus=true;save.money=(save.money||0)+5;writeSave();return;}
   await say(n,'Hi! I am Emma. Want to try a quick quiz?','¡Hola! Soy Emma. ¿Quieres intentar un quiz rápido?');
   await runQuiz(n,QUIZ.emmaBonus,'emmaBonus');
   save.done.emmaBonus=true;save.money=(save.money||0)+5;writeSave();sfx.star();
@@ -520,7 +520,7 @@ async function talkEmmaBonus(n){
 }
 async function talkKaiBonus(n){
   if(save.done.kaiBonus){await say(n,'Keep practicing your English!','¡Sigue practicando tu inglés!');return;}
-  if(await npcTestSkip(n))return;
+  if(await npcTestSkip(n)){save.done.kaiBonus=true;save.money=(save.money||0)+5;writeSave();return;}
   await say(n,'Hi! I am Kai. Let\'s practice speaking!','¡Hola! Soy Kai. ¡Practiquemos!');
   await runQuiz(n,QUIZ.kaiBonus,'kaiBonus');
   save.done.kaiBonus=true;save.money=(save.money||0)+5;writeSave();sfx.star();
@@ -1405,7 +1405,6 @@ async function awardStar(){
 }
 async function talkNPC(n){
   n.dir=OPP[player.dir];
-  if(state.npcTest){await say(n,'Hi!','¡Hola!');return;}
   if(n.animal){
     if(n.id==='dog'){
       if(save.vitokoAsked&&!save.dogFound&&!save.dogGiven)return fetchDog(n);
@@ -1418,7 +1417,7 @@ async function talkNPC(n){
   if(lines){for(const l of lines)await say(n,l[0],l[1]);return;}
   const quiz=QUIZ[n.quest];
   if(save.done[n.quest]){for(const l of n.again)await say(n,l[0],l[1]);return;}
-  if(await npcTestSkip(n))return;
+  if(await npcTestSkip(n)){save.done[n.quest]=true;await awardStar();return;}
   for(const l of n.intro)await say(n,l[0],l[1]);
   await runQuiz(n,quiz,n.quest);
   save.done[n.quest]=true;await awardStar();
@@ -1435,7 +1434,10 @@ async function talkPrincipal(n){
   if(!save.final1){
     if(starsOf(1)<6&&!state.cheat){await say(n,'Come back with 6 stars, please.','Vuelve con 6 estrellas, por favor.');return;}
     await say(n,'Welcome, {n}! I am Teacher Seba.','¡Bienvenido, {n}! Soy el profe Seba.');
-    if(await npcTestSkip(n))return;
+    if(await npcTestSkip(n)){
+      save.final1=true;save.level=2;save.money=(save.money||0)+1;writeSave();
+      await levelUp(1);return;
+    }
     await say(n,'This is your Level 1 exam. You can do it!','Este es tu examen del Nivel 1. ¡Tú puedes!');
     await runQuiz(n,QUIZ.final);
     await say(n,'Congratulations, {n}! Level 1 is complete!','¡Felicitaciones, {n}! ¡Nivel 1 completo!');
@@ -1444,7 +1446,9 @@ async function talkPrincipal(n){
   }
   if((save.level>=3&&starsOf(3)>=6)||state.cheat){
     await say(n,'Welcome back, {n}! It is time for Level 3.','¡Bienvenido de vuelta, {n}! Es hora del Nivel 3.');
-    if(await npcTestSkip(n))return;
+    if(await npcTestSkip(n)){
+      save.final3=true;save.level=4;save.money=(save.money||0)+1;writeSave();await levelUp(3);return;
+    }
     await say(n,'This is your Level 3 exam. You can do it!','Este es tu examen del Nivel 3. ¡Tú puedes!');
     await runQuiz(n,QUIZ.final3);
     await say(n,'Congratulations, {n}! Level 3 is complete!','¡Felicitaciones, {n}! ¡Nivel 3 completo!');
@@ -1464,7 +1468,10 @@ async function talkVice(n){
     await say(n,'Come back with 6 stars from Level 2.','Vuelve con las 6 estrellas del Nivel 2.');return;
   }
   await say(n,'Hello, {n}! I am the Vice Principal.','¡Hola, {n}! Soy la vicedirectora.');
-  if(await npcTestSkip(n))return;
+  if(await npcTestSkip(n)){
+    save.final2=true;save.level=3;save.money=(save.money||0)+1;writeSave();
+    await levelUp(2);return;
+  }
   await say(n,'It is time for the Level 2 exam. You can do it!','Es hora del examen del Nivel 2. ¡Tú puedes!');
   await runQuiz(n,QUIZ.final2);
   await say(n,'Congratulations, {n}! Level 2 is complete!','¡Felicitaciones, {n}! ¡Nivel 2 completo!');
@@ -1684,7 +1691,7 @@ async function bossDeath(n){
 }
 async function talkBoss(n){
   if(save.final4){await say(n,'You passed my test, {n}. Now go home!','Pasaste mi prueba, {n}. ¡Ahora vete a casa!');return;}
-  if(await npcTestSkip(n))return;
+  if(await npcTestSkip(n)){save.final4=true;writeSave();await ending();return;}
   if(!save.bossTries){
     await say(n,'WHO DARES TO ENTER MY ROOM?!','¡¿QUIÉN SE ATREVE A ENTRAR EN MI SALA?!');
     await say(n,'I am Teacher Seba... the BIG Teacher Seba!','¡Soy el profe Seba... el profe Seba GIGANTE!');
@@ -2632,7 +2639,7 @@ function applyCode(){
   if(scene!=='settings')return;
   const v=codeEl.value.trim();codeEl.value='';
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
-  else if(v==='2179'){state.npcTest=!state.npcTest;settings.ok=true;settings.msg=state.npcTest?'🧪 ¡Modo prueba NPC ACTIVADO! Los NPC solo dirán "Hola" y las puertas cerradas se abrirán.':'🧪 Modo prueba NPC desactivado.';sfx.star();}
+  else if(v==='2179'){state.npcTest=!state.npcTest;settings.ok=true;settings.msg=state.npcTest?'🧪 ¡Modo prueba NPC ACTIVADO! Los NPC solo dirán "Hola" (el examen cuenta como aprobado), las puertas cerradas se abrirán.':'🧪 Modo prueba NPC desactivado.';sfx.star();}
   else if(v==='001'){
     for(const lv of [1,2,3])for(const q of LV[lv])save.done[q]=true;
     save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;save.money=(save.money||0)+80;
