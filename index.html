@@ -1630,9 +1630,10 @@ function submitScore(){
 }
 let leaderboard=null,leaderboardStatus='idle';
 function fetchLeaderboard(){
-  if(!SCORE_ENDPOINT){leaderboardStatus='error';return;}
+  if(!SCORE_ENDPOINT){leaderboardStatus='off';return;}
   leaderboardStatus='loading';
-  fetch(SCORE_ENDPOINT).then(r=>r.json()).then(d=>{
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),9000));
+  Promise.race([fetch(SCORE_ENDPOINT).then(r=>r.json()),timeout]).then(d=>{
     leaderboard=Array.isArray(d)?d.slice().sort((a,b)=>(b.score||0)-(a.score||0)):[];
     leaderboardStatus='ok';
   }).catch(()=>{leaderboardStatus='error';});
@@ -1989,7 +1990,7 @@ function drawEnd(c){
   if(certKind==='final'){c.font=F(15,'bold');c.fillStyle='#b8860b';c.fillText(`⭐ Puntaje / Score: ${computeScore()} / 100`,tx,376);}
   c.font=F(13,'bold');c.fillStyle=NAVY;c.fillText('INCOSAF',316,398);
   drawParts(c);
-  if(Math.floor(time*2)%2===0){c.font=F(14,'bold');c.fillStyle='#fff';c.fillText(certResolve?'Enter / toca la pantalla para continuar':(certKind==='final'&&leaderboardStatus==='ok'&&leaderboard&&leaderboard.length?'Enter / toca la pantalla para ver el ranking':'Enter / toca la pantalla para volver al inicio'),CW/2,CH-16);}
+  if(Math.floor(time*2)%2===0){c.font=F(14,'bold');c.fillStyle='#fff';c.fillText(certResolve?'Enter / toca la pantalla para continuar':(certKind==='final'&&leaderboardStatus!=='off'?'Enter / toca la pantalla para ver el ranking':'Enter / toca la pantalla para volver al inicio'),CW/2,CH-16);}
 }
 function drawBoard(c){
   const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0d1740');g.addColorStop(.6,'#1f3a8f');g.addColorStop(1,'#132a70');c.fillStyle=g;c.fillRect(0,0,CW,CH);
@@ -1998,19 +1999,27 @@ function drawBoard(c){
   c.textAlign='center';c.textBaseline='middle';
   c.font=F(28,'bold');c.fillStyle=GOLD;c.fillText('🏆 Mejores puntajes',CW/2,44);
   c.font=F(13,'italic');c.fillStyle='#ffe27a';c.fillText('Top scores de todos los cursos',CW/2,70);
-  const rows=(leaderboard||[]).slice(0,10);
-  const x0=90,y0=96,rw=460,rh=32;
-  rows.forEach((r,i)=>{
-    const y=y0+i*rh,mine=r.name===save.name&&r.course===save.course;
-    c.fillStyle=mine?'rgba(255,226,122,.24)':(i%2===0?'rgba(255,255,255,.06)':'rgba(255,255,255,.02)');
-    rr(c,x0,y,rw,rh-4,8);c.fill();
-    if(mine){c.strokeStyle=GOLD;c.lineWidth=2;rr(c,x0,y,rw,rh-4,8);c.stroke();}
-    c.textAlign='left';c.font=F(14,'bold');c.fillStyle=i<3?GOLD:'#fff';c.fillText('#'+(i+1),x0+14,y+14);
-    c.font=F(13,'bold');c.fillStyle='#fff';c.fillText(String(r.name||'?').slice(0,16),x0+56,y+12);
-    c.font=F(10,'italic');c.fillStyle='#b9c3ea';c.fillText(String(r.course||'').slice(0,22),x0+56,y+25);
-    c.textAlign='right';c.font=F(16,'bold');c.fillStyle=GOLD;c.fillText((r.score!=null?r.score:'-')+' pts',x0+rw-14,y+14);
-  });
-  if(!rows.length){c.textAlign='center';c.font=F(15);c.fillStyle='#fff';c.fillText('Aún no hay puntajes guardados.',CW/2,240);}
+  if(leaderboardStatus==='loading'){
+    const dots='.'.repeat(1+Math.floor(time*2)%3);
+    c.textAlign='center';c.font=F(16,'bold');c.fillStyle='#fff';c.fillText('Cargando el ranking'+dots,CW/2,230);
+  }else if(leaderboardStatus==='error'){
+    c.textAlign='center';c.font=F(15,'bold');c.fillStyle='#ffb3b3';c.fillText('No se pudo cargar el ranking en este momento.',CW/2,222);
+    c.font=F(12,'italic');c.fillStyle='#ffe27a';c.fillText('Tranquilo, tu puntaje sí quedó guardado en la planilla.',CW/2,248);
+  }else{
+    const rows=(leaderboard||[]).slice(0,10);
+    const x0=90,y0=96,rw=460,rh=32;
+    rows.forEach((r,i)=>{
+      const y=y0+i*rh,mine=r.name===save.name&&r.course===save.course;
+      c.fillStyle=mine?'rgba(255,226,122,.24)':(i%2===0?'rgba(255,255,255,.06)':'rgba(255,255,255,.02)');
+      rr(c,x0,y,rw,rh-4,8);c.fill();
+      if(mine){c.strokeStyle=GOLD;c.lineWidth=2;rr(c,x0,y,rw,rh-4,8);c.stroke();}
+      c.textAlign='left';c.font=F(14,'bold');c.fillStyle=i<3?GOLD:'#fff';c.fillText('#'+(i+1),x0+14,y+14);
+      c.font=F(13,'bold');c.fillStyle='#fff';c.fillText(String(r.name||'?').slice(0,16),x0+56,y+12);
+      c.font=F(10,'italic');c.fillStyle='#b9c3ea';c.fillText(String(r.course||'').slice(0,22),x0+56,y+25);
+      c.textAlign='right';c.font=F(16,'bold');c.fillStyle=GOLD;c.fillText((r.score!=null?r.score:'-')+' pts',x0+rw-14,y+14);
+    });
+    if(!rows.length){c.textAlign='center';c.font=F(15);c.fillStyle='#fff';c.fillText('Aún no hay puntajes guardados.',CW/2,240);}
+  }
   if(Math.floor(time*2)%2===0){c.font=F(14,'bold');c.fillStyle='#fff';c.textAlign='center';c.fillText('Enter / toca la pantalla para volver al inicio',CW/2,CH-16);}
 }
 function drawSetup(c){
@@ -2426,7 +2435,7 @@ function confirmAction(){
   if(scene==='end'){
     if(endT<1.8)return;
     if(certResolve){const r=certResolve;certResolve=null;(async()=>{await fadeTo(1);scene='game';parts.length=0;held.length=0;await fadeTo(0);r();})();return;}
-    if(certKind==='final'&&leaderboardStatus==='ok'&&leaderboard&&leaderboard.length){scene='board';return;}
+    if(certKind==='final'&&leaderboardStatus!=='off'){scene='board';return;}
     scene='title';hasSave=!!loadSave();titleSel=0;parts.length=0;held.length=0;return;
   }
   if(scene==='board'){scene='title';hasSave=!!loadSave();titleSel=0;parts.length=0;held.length=0;return;}
