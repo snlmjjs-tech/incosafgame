@@ -113,7 +113,7 @@ function typed(c,lines,n,x,y,lh){let left=n;for(const ln of lines){const ch=Arra
 function starPath(c,cx,cy,r){c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.45:r;c[i?'lineTo':'moveTo'](cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);}c.closePath();}
 
 /* ---------- estado ---------- */
-const state={voice:true,music:true,vol:.7,cheat:false};
+const state={voice:true,music:true,vol:.7,cheat:false,npcTest:false};
 const PREF_KEY='incosafin_prefs';
 try{const p=JSON.parse(localStorage.getItem(PREF_KEY)||'null');if(p){if(typeof p.music==='boolean')state.music=p.music;if(typeof p.voice==='boolean')state.voice=p.voice;if(typeof p.vol==='number')state.vol=Math.min(1,Math.max(0,p.vol));}}catch(e){}
 function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:state.music,voice:state.voice,vol:state.vol}));}catch(e){}}
@@ -317,6 +317,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.plaza.doors.push({x:19,y:7,to:'level4',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final3,
     msg:()=>['The last gate is locked! I must pass the Level 3 exam first.','¡El último portón está cerrado! Primero debo aprobar el examen del Nivel 3.']});
   Object.assign(MAPS,{"level4":{"id":"level4","name":"Level 4 Courtyard","es":"El patio del Nivel 4","floor":"cobble","wall":"#14204f","facade":"#efdfa6","roof":true,"theme":4,"rows":["####################","WWWWWWWWWWWWWWWWWWWW","WWWWWWWWWWWWWWWWWWWW","HGGGccccccccccccGGGH","HGKGcccJccccJcccGKGH","HGGGccccccccccccGGGH","HcccccNccccccNcccccH","gccccccccOOccccccccH","HccccccccOOccccccccH","HcccccNccccccNcccccH","HGGGcccJccccJcccGGGH","HGKGccccccccccccGKGH","HGGGcccccXXcccccGGGH","HccccccccccccccccccH","HHHHHHHHHHHHHHHHHHHH"],"doors":[],"npcs":["gateguard","emma","sole","kai","diego2"],"tileTalk":{"O":[["A shiny fountain. Almost there!","Una fuente brillante. ¡Ya casi llegamos!"]]}}});
+  MAPS.level4.rows[1]='HHHHHHHHHHHHHHHHHHHH';MAPS.level4.rows[2]='HGGGGGGGGGGGGGGGGGGH';MAPS.level4.facade=false;MAPS.level4.roof=false;
   MAPS.level4.rows[7]=MAPS.level4.rows[7].slice(0,19)+'g';
   MAPS.level4.rows[7]=MAPS.level4.rows[7].slice(0,9)+'cc'+MAPS.level4.rows[7].slice(11);
   MAPS.level4.rows[8]=MAPS.level4.rows[8].slice(0,9)+'cc'+MAPS.level4.rows[8].slice(11);
@@ -337,7 +338,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
     fail:["This won't break the padlock...",'Esto no rompe el candado...']};
   MAPS.garden.swordAt={x:17,y:3};
   MAPS.patio.coins=[{x:6,y:6}];MAPS.plaza.coins=[{x:8,y:3}];MAPS.cafe.coins=[{x:16,y:10}];
-  MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');
+  MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');MAPS.teachers.npcs.push('spider');
   MAPS.plaza.npcs.push('mia','vitoko');MAPS.computer.phoneAt={x:10,y:9};
   for(const m of Object.values(MAPS))if(!m.theme)m.theme=1;
 }
@@ -392,7 +393,7 @@ const LOOK={
  architect:{skin:'#d9a577',hair:'#3a2417',shirt:'#e67e22',pants:'#3d4a5c',style:'cap',cap:'#f5c518',glasses:true},
  techie:{skin:'#f0c8a0',hair:'#111111',shirt:'#6c5ce7',pants:'#2b2b3a',style:'long',glasses:true},
  teacher_m:{skin:'#f0cfa8',hair:'#9a9aa4',shirt:'#e8e8e8',pants:'#2b3550',style:'short',glasses:true,tie:'#c0392b'},
- historian:{skin:'#f1c59a',hair:'#b0b0b8',shirt:'#16a085',pants:'#2b2b3a',style:'bun',glasses:true}
+ historian:{skin:'#f1c59a',hair:'#1a1410',shirt:'#16a085',pants:'#2b2b3a',style:'long'}
 };
 Object.entries({
  teacher:{bt:'skirt',shoes:'#8e3b46',eyes:'#5b3a29'},martina:{hs:'ponytail',bt:'skirt',eyes:'#2e86de',shoes:'#ffffff'},librarian:{eyes:'#7b8794',shoes:'#5a4630'},
@@ -401,7 +402,7 @@ Object.entries({
  pupil3:{hs:'curly',shoes:'#3e8ed0'},pupil4:{hs:'pigtails',bt:'skirt',shoes:'#f0a030'},pupil5:{hs:'buzz',bt:'shorts',shoes:'#ffffff'},pupil6:{hs:'bob',bt:'skirt',eyes:'#2e86de',shoes:'#9b6fd6'},
  pupil7:{hs:'bun',bt:'skirt',shoes:'#ff8fb1'},pupil8:{bt:'shorts',shoes:'#5cb85c'},sofia:{bt:'skirt',eyes:'#2e9a6b',shoes:'#ffffff'},artist:{bt:'skirt',eyes:'#8e44ad',shoes:'#f0a030'},
  vice:{bt:'skirt',shoes:'#333'},scientist:{eyes:'#6b4a2b'},nico:{hs:'spiky',eyes:'#2e86de',shoes:'#e05555'},techie:{hs:'bob',eyes:'#8e44ad',shoes:'#ffffff'},
- historian:{bt:'skirt',shoes:'#5a4630'},vale:{shoes:'#e74c3c'},coach:{shoes:'#ffffff'},mia:{hs:'pigtails',bt:'skirt',eyes:'#3b2a1c',shoes:'#ff9fc0'},
+ historian:{hs:'ponytail',bt:'skirt',eyes:'#3b2a1c',shoes:'#5a4630'},vale:{shoes:'#e74c3c'},coach:{shoes:'#ffffff'},mia:{hs:'pigtails',bt:'skirt',eyes:'#3b2a1c',shoes:'#ff9fc0'},
  vitoko:{hs:'spiky',bt:'shorts',shoes:'#e05555'},gateguard:{eyes:'#3b2a1c',shoes:'#2b2d3a'},kiosco:{eyes:'#6b4a2b',shoes:'#ffffff'},
  emma:{hs:'bob',bt:'skirt',eyes:'#2e9a6b',shoes:'#9b6fd6'},kai:{hs:'curly',shoes:'#1abc9c'},sole:{hs:'ponytail',bt:'skirt',eyes:'#8e44ad',shoes:'#ff8fb1'},diego2:{hs:'buzz',shoes:'#f0a030'},
  guard:{style:'short',hs:'short',hair:'#0f0d0c',cap:null,skin:'#e2b38a',eyes:'#3b2a1c',shoes:'#2b2d3a'},
@@ -489,16 +490,38 @@ const NPCS={
  principal:{name:'Teacher Seba',x:9,y:4,dir:'down',look:LOOK.principal,exam:n=>talkPrincipal(n),
    mark:()=>save.final3?2:(save.final1?((save.level>=3&&starsOf(3)>=6)?1:0):(starsOf(1)>=6?1:0))}
 };
-for(const d of [{"id": "cleaner", "name": "Ms. Rosa", "look": "cleaner", "x": 6, "y": 11, "dir": "right", "lines": [["I clean the school every day. The patio is clean!", "Limpio el colegio todos los días. ¡El patio está limpio!"], ["Please, walk carefully!", "¡Por favor, camina con cuidado!"]]}, {"id": "pupil1", "name": "Beto", "look": "pupil1", "x": 15, "y": 5, "dir": "left", "lines": [["Good morning, {n}! Today is a good day.", "¡Buenos días, {n}! Hoy es un buen día."], ["I like the fountain. It is big!", "Me gusta la fuente. ¡Es grande!"]]}, {"id": "pupil2", "name": "Emi", "look": "pupil2", "x": 3, "y": 10, "dir": "right", "lines": [["Hi! I am Emi. I sit at the desk.", "¡Hola! Soy Emi. Me siento en el escritorio."], ["My favorite subject is English!", "¡Mi asignatura favorita es inglés!"]]}, {"id": "pupil3", "name": "Rafa", "look": "pupil3", "x": 5, "y": 10, "dir": "up", "lines": [["Shhh! I am reading a book.", "¡Shhh! Estoy leyendo un libro."], ["Books are my friends.", "Los libros son mis amigos."]]}, {"id": "cashier", "name": "Lola", "look": "cashier", "x": 17, "y": 3, "dir": "left", "lines": [["That is two apples and one milk.", "Son dos manzanas y una leche."], ["Do you want a sandwich?", "¿Quieres un sándwich?"]]}, {"id": "pupil4", "name": "Cata", "look": "pupil4", "x": 14, "y": 5, "dir": "left", "lines": [["I love the stage! I sing and dance.", "¡Amo el escenario! Canto y bailo."], ["English Day is fantastic!", "¡El Día del Inglés es fantástico!"]]}, {"id": "sofia", "name": "Sofía", "look": "sofia", "x": 6, "y": 10, "dir": "up", "quest": "family", "intro": [["Hi! I am Sofía. This is my family album!", "¡Hola! Soy Sofía. ¡Este es mi álbum de familia!"], ["Do you know the family words?", "¿Conoces las palabras de la familia?"]], "outro": [["You know my family words! Take a star.", "¡Conoces las palabras de mi familia! Toma una estrella."]], "again": [["I love my family. Do you love yours?", "Amo a mi familia. ¿Tú amas a la tuya?"]]}, {"id": "gardener", "name": "Mr. Pedro", "look": "gardener", "x": 16, "y": 10, "dir": "left", "quest": "weather", "intro": [["Good morning! I am Mr. Pedro, the gardener.", "¡Buenos días! Soy el señor Pedro, el jardinero."], ["The weather is important for my flowers.", "El clima es importante para mis flores."]], "outro": [["Great! You know the weather. Here is a star.", "¡Genial! Conoces el clima. Aquí tienes una estrella."]], "again": [["Look at the sky. What a beautiful day!", "Mira el cielo. ¡Qué hermoso día!"]]}, {"id": "vice", "name": "Vice Principal", "look": "vice", "x": 10, "y": 5, "dir": "down", "exam": "vice"}, {"id": "coach", "name": "Coach Ana", "look": "coach", "x": 9, "y": 4, "dir": "down", "quest": "sports", "intro": [["Hello! I am Coach Ana. Sports are great!", "¡Hola! Soy la entrenadora Ana. ¡Los deportes son geniales!"], ["Are you ready to play?", "¿Estás listo para jugar?"]], "outro": [["You are a champion! Here is a star.", "¡Eres un campeón! Aquí tienes una estrella."]], "again": [["Keep moving! Sports are good for you.", "¡Sigue moviéndote! El deporte es bueno para ti."]]}, {"id": "pupil5", "name": "Joaquín", "look": "pupil5", "x": 16, "y": 8, "dir": "left", "lines": [["Basketball is fun! Do you like sports?", "¡El básquetbol es divertido! ¿Te gustan los deportes?"], ["I play every Saturday.", "Juego todos los sábados."]]}, {"id": "scientist", "name": "Dr. Luz", "look": "scientist", "x": 9, "y": 3, "dir": "down", "quest": "animals", "intro": [["Welcome to my lab! I am Dr. Luz.", "¡Bienvenido a mi laboratorio! Soy la doctora Luz."], ["I study animals. Do you know them?", "Yo estudio a los animales. ¿Los conoces?"]], "outro": [["Fantastic! You know animals. Take a star.", "¡Fantástico! Conoces a los animales. Toma una estrella."]], "again": [["Animals are amazing. Come back soon!", "Los animales son increíbles. ¡Vuelve pronto!"]]}, {"id": "pupil6", "name": "Isi", "look": "pupil6", "x": 16, "y": 10, "dir": "left", "lines": [["Look! A test tube. Science is fun!", "¡Mira! Un tubo de ensayo. ¡La ciencia es divertida!"], ["I want to be a scientist.", "Quiero ser científica."]]}, {"id": "artist", "name": "Ms. Violeta", "look": "artist", "x": 9, "y": 3, "dir": "down", "quest": "clothes", "intro": [["Hello! I am Ms. Violeta. I love art!", "¡Hola! Soy la señorita Violeta. ¡Amo el arte!"], ["Let's talk about clothes for my drawings!", "¡Hablemos de la ropa para mis dibujos!"]], "outro": [["Beautiful! You know the clothes. A star for you!", "¡Hermoso! Conoces la ropa. ¡Una estrella para ti!"]], "again": [["Art makes the world colorful!", "¡El arte hace el mundo colorido!"]]}, {"id": "pupil7", "name": "Fran", "look": "pupil7", "x": 16, "y": 6, "dir": "left", "lines": [["I paint with red, blue and yellow.", "Pinto con rojo, azul y amarillo."], ["Painting makes me happy.", "Pintar me hace feliz."]]}, {"id": "musician", "name": "Mr. Tomás", "look": "musician", "x": 9, "y": 3, "dir": "down", "quest": "feelings", "intro": [["Hello! I am Mr. Tomás. Music is my life!", "¡Hola! Soy el señor Tomás. ¡La música es mi vida!"], ["Music can show how we feel. Let's talk!", "La música muestra cómo nos sentimos. ¡Conversemos!"]], "outro": [["Wonderful! You know feelings. Here is a star.", "¡Maravilloso! Conoces los sentimientos. Aquí tienes una estrella."]], "again": [["Music makes me happy. And you?", "La música me hace feliz. ¿Y a ti?"]]}, {"id": "pupil8", "name": "Vicho", "look": "pupil8", "x": 2, "y": 10, "dir": "right", "lines": [["I play the guitar. It is my favorite.", "Toco la guitarra. Es mi favorita."], ["Music is for everyone!", "¡La música es para todos!"]]}, {"id": "nico", "name": "Nico", "look": "nico", "x": 5, "y": 9, "dir": "right", "quest": "preps", "intro": [["Hi! I am Nico. I lost my cat!", "¡Hola! Soy Nico. ¡Perdí a mi gato!"], ["Help me find it. Where is it?", "Ayúdame a encontrarlo. ¿Dónde está?"]], "outro": [["Thank you! You found my cat. Here is a star.", "¡Gracias! Encontraste a mi gato. Aquí tienes una estrella."]], "again": [["My cat is home now. Thanks!", "Mi gato ya está en casa. ¡Gracias!"]]}, {"id": "vale", "name": "Vale", "look": "vale", "x": 14, "y": 9, "dir": "left", "quest": "can", "intro": [["Yo! I am Vale. Look at my skateboard!", "¡Hey! Soy Vale. ¡Mira mi patineta!"], ["What can you do? Tell me!", "¿Qué puedes hacer? ¡Cuéntame!"]], "outro": [["Cool! You are awesome. Take a star.", "¡Genial! Eres increíble. Toma una estrella."]], "again": [["Keep practicing. You can do it!", "¡Sigue practicando. Tú puedes!"]]}, {"id": "architect", "name": "Mr. Rocha", "look": "architect", "x": 10, "y": 11, "dir": "up", "quest": "thereis", "intro": [["Hello! I am Mr. Rocha, the architect.", "¡Hola! Soy el señor Rocha, el arquitecto."], ["I am designing a new school. Help me!", "Estoy diseñando un colegio nuevo. ¡Ayúdame!"]], "outro": [["Perfect plan! Here is a star for you.", "¡Plan perfecto! Aquí tienes una estrella."]], "again": [["The new school will be beautiful!", "¡El colegio nuevo será hermoso!"]]}, {"id": "techie", "name": "Tina", "look": "techie", "x": 9, "y": 3, "dir": "down", "quest": "time", "intro": [["Hi! I am Tina. Welcome to the Computer Lab!", "¡Hola! Soy Tina. ¡Bienvenido al laboratorio de computación!"], ["Computers need the time. Do you know it?", "Los computadores necesitan la hora. ¿La conoces?"]], "outro": [["Great! Time is easy for you. Take a star.", "¡Genial! La hora es fácil para ti. Toma una estrella."]], "again": [["Tick tock! Time flies!", "¡Tic tac! ¡El tiempo vuela!"]]}, {"id": "paz", "name": "Mr. Paz", "look": "teacher_m", "x": 5, "y": 4, "dir": "right", "quest": "routines", "intro": [["Good afternoon! I am Mr. Paz.", "¡Buenas tardes! Soy el señor Paz."], ["Let's talk about daily routines.", "Hablemos de las rutinas diarias."]], "outro": [["Excellent! You know routines. Here is a star.", "¡Excelente! Conoces las rutinas. Aquí tienes una estrella."]], "again": [["A good routine is a good day!", "¡Una buena rutina es un buen día!"]]}, {"id": "historian", "name": "Ms. Clio", "look": "historian", "x": 14, "y": 4, "dir": "left", "quest": "past", "intro": [["Hello, my dear. I am Ms. Clio, the history teacher.", "Hola, querido. Soy la señorita Clio, profesora de historia."], ["Let's talk about yesterday!", "¡Hablemos del ayer!"]], "outro": [["Splendid! You know the past. Take a star.", "¡Espléndido! Conoces el pasado. Toma una estrella."]], "again": [["History is full of stories!", "¡La historia está llena de cuentos!"]]}, {"id": "secretary", "name": "Ms. Paty", "look": "secretary", "x": 9, "y": 10, "dir": "down", "lines": [["Good afternoon! The teachers are busy.", "¡Buenas tardes! Los profesores están ocupados."], ["Do you need a pen or a notebook?", "¿Necesitas un lápiz pasta o un cuaderno?"]]}, {"id": "emma", "name": "Emma", "look": "emma", "x": 6, "y": 3, "dir": "down", "lines": [["Tip: read a little in English every day!", "Tip: ¡lee un poco en inglés todos los días!"], ["Do you know what \"READ\" means? It means \"leer\"!", "¿Sabes qué significa \"READ\"? ¡Significa \"leer\"!"]]}, {"id": "sole", "name": "Sole", "look": "sole", "x": 6, "y": 11, "dir": "up", "lines": [["Tip: the connector words help you speak longer!", "Tip: ¡los conectores te ayudan a hablar más!"], ["Which word means \"pero\" in English? It is \"BUT\"!", "¿Qué palabra significa \"pero\" en inglés? ¡Es \"BUT\"!"]]}, {"id": "kai", "name": "Kai", "look": "kai", "x": 13, "y": 5, "dir": "down", "lines": [["Tip: practice speaking out loud, even alone!", "Tip: ¡practica hablar en voz alta, aunque sea solo!"], ["Can you say \"How are you?\" in English? Try it!", "¿Puedes decir \"How are you?\" en inglés? ¡Inténtalo!"]]}, {"id": "diego2", "name": "Diego", "look": "diego2", "x": 13, "y": 11, "dir": "up", "lines": [["Tip: don't be afraid of mistakes. They help you learn!", "Tip: ¡no le temas a los errores! Te ayudan a aprender."], ["Are you ready for the big test ahead? You can do it!", "¿Estás listo para la gran prueba? ¡Tú puedes!"]]}])NPCS[d.id]=Object.assign({},d,{look:LOOK[d.look],
-  talk:d.lines?(()=>d.lines):undefined,
-  exam:d.exam==='vice'?(n=>talkVice(n)):undefined,
-  mark:d.exam==='vice'?(()=>save.final2?2:(starsOf(2)>=6?1:0)):undefined});
+for(const d of [{"id": "cleaner", "name": "Ms. Rosa", "look": "cleaner", "x": 6, "y": 11, "dir": "right", "lines": [["I clean the school every day. The patio is clean!", "Limpio el colegio todos los días. ¡El patio está limpio!"], ["Please, walk carefully!", "¡Por favor, camina con cuidado!"]]}, {"id": "pupil1", "name": "Beto", "look": "pupil1", "x": 15, "y": 5, "dir": "left", "lines": [["Good morning, {n}! Today is a good day.", "¡Buenos días, {n}! Hoy es un buen día."], ["I like the fountain. It is big!", "Me gusta la fuente. ¡Es grande!"]]}, {"id": "pupil2", "name": "Emi", "look": "pupil2", "x": 3, "y": 10, "dir": "right", "lines": [["Hi! I am Emi. I sit at the desk.", "¡Hola! Soy Emi. Me siento en el escritorio."], ["My favorite subject is English!", "¡Mi asignatura favorita es inglés!"]]}, {"id": "pupil3", "name": "Rafa", "look": "pupil3", "x": 5, "y": 10, "dir": "up", "lines": [["Shhh! I am reading a book.", "¡Shhh! Estoy leyendo un libro."], ["Books are my friends.", "Los libros son mis amigos."]]}, {"id": "cashier", "name": "Lola", "look": "cashier", "x": 17, "y": 3, "dir": "left", "lines": [["That is two apples and one milk.", "Son dos manzanas y una leche."], ["Do you want a sandwich?", "¿Quieres un sándwich?"]]}, {"id": "pupil4", "name": "Cata", "look": "pupil4", "x": 14, "y": 5, "dir": "left", "lines": [["I love the stage! I sing and dance.", "¡Amo el escenario! Canto y bailo."], ["English Day is fantastic!", "¡El Día del Inglés es fantástico!"]]}, {"id": "sofia", "name": "Sofía", "look": "sofia", "x": 6, "y": 10, "dir": "up", "quest": "family", "intro": [["Hi! I am Sofía. This is my family album!", "¡Hola! Soy Sofía. ¡Este es mi álbum de familia!"], ["Do you know the family words?", "¿Conoces las palabras de la familia?"]], "outro": [["You know my family words! Take a star.", "¡Conoces las palabras de mi familia! Toma una estrella."]], "again": [["I love my family. Do you love yours?", "Amo a mi familia. ¿Tú amas a la tuya?"]]}, {"id": "gardener", "name": "Mr. Pedro", "look": "gardener", "x": 16, "y": 10, "dir": "left", "quest": "weather", "intro": [["Good morning! I am Mr. Pedro, the gardener.", "¡Buenos días! Soy el señor Pedro, el jardinero."], ["The weather is important for my flowers.", "El clima es importante para mis flores."]], "outro": [["Great! You know the weather. Here is a star.", "¡Genial! Conoces el clima. Aquí tienes una estrella."]], "again": [["Look at the sky. What a beautiful day!", "Mira el cielo. ¡Qué hermoso día!"]]}, {"id": "vice", "name": "Vice Principal", "look": "vice", "x": 10, "y": 5, "dir": "down", "exam": "vice"}, {"id": "coach", "name": "Coach Ana", "look": "coach", "x": 9, "y": 4, "dir": "down", "quest": "sports", "intro": [["Hello! I am Coach Ana. Sports are great!", "¡Hola! Soy la entrenadora Ana. ¡Los deportes son geniales!"], ["Are you ready to play?", "¿Estás listo para jugar?"]], "outro": [["You are a champion! Here is a star.", "¡Eres un campeón! Aquí tienes una estrella."]], "again": [["Keep moving! Sports are good for you.", "¡Sigue moviéndote! El deporte es bueno para ti."]]}, {"id": "pupil5", "name": "Joaquín", "look": "pupil5", "x": 16, "y": 8, "dir": "left", "lines": [["Basketball is fun! Do you like sports?", "¡El básquetbol es divertido! ¿Te gustan los deportes?"], ["I play every Saturday.", "Juego todos los sábados."]]}, {"id": "scientist", "name": "Dr. Luz", "look": "scientist", "x": 9, "y": 3, "dir": "down", "quest": "animals", "intro": [["Welcome to my lab! I am Dr. Luz.", "¡Bienvenido a mi laboratorio! Soy la doctora Luz."], ["I study animals. Do you know them?", "Yo estudio a los animales. ¿Los conoces?"]], "outro": [["Fantastic! You know animals. Take a star.", "¡Fantástico! Conoces a los animales. Toma una estrella."]], "again": [["Animals are amazing. Come back soon!", "Los animales son increíbles. ¡Vuelve pronto!"]]}, {"id": "pupil6", "name": "Isi", "look": "pupil6", "x": 16, "y": 10, "dir": "left", "lines": [["Look! A test tube. Science is fun!", "¡Mira! Un tubo de ensayo. ¡La ciencia es divertida!"], ["I want to be a scientist.", "Quiero ser científica."]]}, {"id": "artist", "name": "Ms. Violeta", "look": "artist", "x": 9, "y": 3, "dir": "down", "quest": "clothes", "intro": [["Hello! I am Ms. Violeta. I love art!", "¡Hola! Soy la señorita Violeta. ¡Amo el arte!"], ["Let's talk about clothes for my drawings!", "¡Hablemos de la ropa para mis dibujos!"]], "outro": [["Beautiful! You know the clothes. A star for you!", "¡Hermoso! Conoces la ropa. ¡Una estrella para ti!"]], "again": [["Art makes the world colorful!", "¡El arte hace el mundo colorido!"]]}, {"id": "pupil7", "name": "Fran", "look": "pupil7", "x": 16, "y": 6, "dir": "left", "lines": [["I paint with red, blue and yellow.", "Pinto con rojo, azul y amarillo."], ["Painting makes me happy.", "Pintar me hace feliz."]]}, {"id": "musician", "name": "Mr. Tomás", "look": "musician", "x": 9, "y": 3, "dir": "down", "quest": "feelings", "intro": [["Hello! I am Mr. Tomás. Music is my life!", "¡Hola! Soy el señor Tomás. ¡La música es mi vida!"], ["Music can show how we feel. Let's talk!", "La música muestra cómo nos sentimos. ¡Conversemos!"]], "outro": [["Wonderful! You know feelings. Here is a star.", "¡Maravilloso! Conoces los sentimientos. Aquí tienes una estrella."]], "again": [["Music makes me happy. And you?", "La música me hace feliz. ¿Y a ti?"]]}, {"id": "pupil8", "name": "Vicho", "look": "pupil8", "x": 2, "y": 10, "dir": "right", "lines": [["I play the guitar. It is my favorite.", "Toco la guitarra. Es mi favorita."], ["Music is for everyone!", "¡La música es para todos!"]]}, {"id": "nico", "name": "Nico", "look": "nico", "x": 5, "y": 9, "dir": "right", "quest": "preps", "intro": [["Hi! I am Nico. I lost my cat!", "¡Hola! Soy Nico. ¡Perdí a mi gato!"], ["Help me find it. Where is it?", "Ayúdame a encontrarlo. ¿Dónde está?"]], "outro": [["Thank you! You found my cat. Here is a star.", "¡Gracias! Encontraste a mi gato. Aquí tienes una estrella."]], "again": [["My cat is home now. Thanks!", "Mi gato ya está en casa. ¡Gracias!"]]}, {"id": "vale", "name": "Vale", "look": "vale", "x": 14, "y": 9, "dir": "left", "quest": "can", "intro": [["Yo! I am Vale. Look at my skateboard!", "¡Hey! Soy Vale. ¡Mira mi patineta!"], ["What can you do? Tell me!", "¿Qué puedes hacer? ¡Cuéntame!"]], "outro": [["Cool! You are awesome. Take a star.", "¡Genial! Eres increíble. Toma una estrella."]], "again": [["Keep practicing. You can do it!", "¡Sigue practicando. Tú puedes!"]]}, {"id": "architect", "name": "Mr. Rocha", "look": "architect", "x": 10, "y": 11, "dir": "up", "quest": "thereis", "intro": [["Hello! I am Mr. Rocha, the architect.", "¡Hola! Soy el señor Rocha, el arquitecto."], ["I am designing a new school. Help me!", "Estoy diseñando un colegio nuevo. ¡Ayúdame!"]], "outro": [["Perfect plan! Here is a star for you.", "¡Plan perfecto! Aquí tienes una estrella."]], "again": [["The new school will be beautiful!", "¡El colegio nuevo será hermoso!"]]}, {"id": "techie", "name": "Tina", "look": "techie", "x": 9, "y": 3, "dir": "down", "quest": "time", "intro": [["Hi! I am Tina. Welcome to the Computer Lab!", "¡Hola! Soy Tina. ¡Bienvenido al laboratorio de computación!"], ["Computers need the time. Do you know it?", "Los computadores necesitan la hora. ¿La conoces?"]], "outro": [["Great! Time is easy for you. Take a star.", "¡Genial! La hora es fácil para ti. Toma una estrella."]], "again": [["Tick tock! Time flies!", "¡Tic tac! ¡El tiempo vuela!"]]}, {"id": "paz", "name": "Don Gregorio", "look": "teacher_m", "x": 5, "y": 4, "dir": "right", "quest": "routines", "intro": [["Good afternoon! I am Don Gregorio.", "¡Buenas tardes! Soy Don Gregorio."], ["Let's talk about daily routines.", "Hablemos de las rutinas diarias."]], "outro": [["Excellent! You know routines. Here is a star.", "¡Excelente! Conoces las rutinas. Aquí tienes una estrella."]], "again": [["A good routine is a good day!", "¡Una buena rutina es un buen día!"]]}, {"id": "historian", "name": "Matty", "look": "historian", "x": 14, "y": 4, "dir": "left", "quest": "past", "intro": [["Hello, my dear. I am Matty, the history teacher.", "Hola, querido. Soy Matty, profesora de historia."], ["Let's talk about yesterday!", "¡Hablemos del ayer!"]], "outro": [["Splendid! You know the past. Take a star.", "¡Espléndido! Conoces el pasado. Toma una estrella."]], "again": [["History is full of stories!", "¡La historia está llena de cuentos!"]]}, {"id": "secretary", "name": "Ms. Paty", "look": "secretary", "x": 9, "y": 10, "dir": "down", "lines": [["Good afternoon! The teachers are busy.", "¡Buenas tardes! Los profesores están ocupados."], ["Do you need a pen or a notebook?", "¿Necesitas un lápiz pasta o un cuaderno?"]]}, {"id": "emma", "name": "Emma", "look": "emma", "x": 6, "y": 3, "dir": "down", "exam": "emma"}, {"id": "sole", "name": "Sole", "look": "sole", "x": 6, "y": 11, "dir": "up", "dance": true, "lines": [["I love dancing! Do you want to dance with me?", "¡Amo bailar! ¿Quieres bailar conmigo?"], ["Music makes my feet move all by themselves!", "¡La música hace que mis pies se muevan solos!"]]}, {"id": "kai", "name": "Kai", "look": "kai", "x": 13, "y": 5, "dir": "down", "exam": "kai"}, {"id": "diego2", "name": "Diego", "look": "diego2", "x": 13, "y": 11, "dir": "up", "dance": true, "lines": [["This is my favorite song! Come dance!", "¡Esta es mi canción favorita! ¡Ven a bailar!"], ["Dancing is a great way to celebrate English Day!", "¡Bailar es una gran forma de celebrar el Día del Inglés!"]]}])NPCS[d.id]=Object.assign({},d,{look:LOOK[d.look],
+  talk:d.lines?(()=>d.lines):undefined,dance:d.dance,
+  exam:d.exam==='vice'?(n=>talkVice(n)):d.exam==='emma'?(n=>talkEmmaBonus(n)):d.exam==='kai'?(n=>talkKaiBonus(n)):undefined,
+  mark:d.exam==='vice'?(()=>save.final2?2:(starsOf(2)>=6?1:0)):d.exam==='emma'?(()=>save.done.emmaBonus?2:1):d.exam==='kai'?(()=>save.done.kaiBonus?2:1):undefined});
 Object.assign(LOOK,{rafa:{style:'short',hs:'swept',hair:'#2a1c14',skin:'#ecc9a6',eyes:'#3b2a1c',shirt:'#1a1a1f',blazer:'#a5428c',pants:'#a5428c',shoes:'#2a2a30',beard:true,camera:true,g:'m',build:1}});
 LOOK.giant=Object.assign({},LOOK.principal,{mood:'angry',tie:'#e05555'});
 QUIZ.boss={"id": "boss", "tag": "Big test", "qs": [{"en": "I take an umbrella ___ it is raining.", "es": "Llevo paraguas ___ está lloviendo.", "opts": ["because", "but", "then"], "hint": "BECAUSE = porque (da una razón)."}, {"en": "___ is your name?", "es": "¿___ es tu nombre? / ¿Cómo te llamas?", "opts": ["What", "Where", "Why"], "hint": "WHAT = qué (pregunta por cosas)."}, {"en": "I like tea, ___ I don't like coffee.", "es": "Me gusta el té, ___ no me gusta el café.", "opts": ["but", "and", "so"], "hint": "BUT = pero (contraste)."}, {"en": "___ do you live? In Santiago.", "es": "¿___ vives? En Santiago.", "opts": ["Where", "Who", "How"], "hint": "WHERE = dónde (pregunta por lugares)."}, {"en": "___ you study, you learn.", "es": "___ estudias, aprendes.", "opts": ["If", "But", "So"], "hint": "IF = si (condición)."}, {"en": "___ are you sad? Because I am tired.", "es": "¿___ estás triste? Porque estoy cansado.", "opts": ["Why", "Which", "Where"], "hint": "WHY = por qué. Se responde con BECAUSE."}, {"en": "I was tired, ___ I slept.", "es": "Estaba cansado, ___ dormí.", "opts": ["so", "but", "if"], "hint": "SO = así que (resultado)."}, {"en": "___ are you? I am fine, thanks.", "es": "¿___ estás? Estoy bien, gracias.", "opts": ["How", "Who", "What"], "hint": "HOW = cómo."}, {"en": "___ it was cold, we played outside.", "es": "___ hacía frío, jugamos afuera.", "opts": ["Although", "And", "So"], "hint": "ALTHOUGH = aunque (contraste inesperado)."}, {"en": "___ is your teacher? Teacher Seba!", "es": "¿___ es tu profesor? ¡El profe Seba!", "opts": ["Who", "Where", "Why"], "hint": "WHO = quién (pregunta por personas)."}]};QUIZ.boss.id='boss';QUIZ.final3.tag='Level 3 exam';
-for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}, {"id": "vitoko", "name": "Vitoko", "look": "vitoko", "x": 5, "y": 4, "dir": "down", "exam": "vitoko"}, {"id": "gateguard", "name": "Guardia", "look": "gateguard", "x": 17, "y": 7, "dir": "left", "exam": "gateguard"}, {"id": "kiosco", "name": "Don Beto", "look": "kiosco", "x": 2, "y": 13, "dir": "up", "exam": "kiosco"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
+QUIZ.emmaBonus={tag:'Bonus',qs:[
+  {en:'What does "Hello" mean?',es:'¿Qué significa "Hello"?',opts:['Hola','Adiós','Gracias'],hint:'HELLO = Hola.'},
+  {en:'Choose the correct word: I ___ a book.',es:'Elige la palabra correcta: Yo ___ un libro.',opts:['read','eat','run'],hint:'READ = leer.'}
+]};
+QUIZ.kaiBonus={tag:'Bonus',qs:[
+  {en:'How do you say "¿Cómo estás?" in English?',es:'¿Cómo se dice "¿Cómo estás?" en inglés?',opts:['How are you?','What is this?','Where are you?'],hint:'HOW ARE YOU? = ¿Cómo estás?'},
+  {en:'I am fine, ___ you?',es:'Estoy bien, ¿y ___?',opts:['and','but','so'],hint:'AND = y.'}
+]};
+async function talkEmmaBonus(n){
+  if(save.done.emmaBonus){await say(n,'Reading is fun! See you around.','¡Leer es divertido! Nos vemos.');return;}
+  await say(n,'Hi! I am Emma. Want to try a quick quiz?','¡Hola! Soy Emma. ¿Quieres intentar un quiz rápido?');
+  await runQuiz(n,QUIZ.emmaBonus,'emmaBonus');
+  save.done.emmaBonus=true;save.money=(save.money||0)+5;writeSave();sfx.star();
+  await say(n,'Great job! Here is $5 for you.','¡Buen trabajo! Aquí tienes $5.');
+}
+async function talkKaiBonus(n){
+  if(save.done.kaiBonus){await say(n,'Keep practicing your English!','¡Sigue practicando tu inglés!');return;}
+  await say(n,'Hi! I am Kai. Let\'s practice speaking!','¡Hola! Soy Kai. ¡Practiquemos!');
+  await runQuiz(n,QUIZ.kaiBonus,'kaiBonus');
+  save.done.kaiBonus=true;save.money=(save.money||0)+5;writeSave();sfx.star();
+  await say(n,'Awesome! Here is $5 for you.','¡Genial! Aquí tienes $5.');
+}
+for(const d of [{"id": "rafa", "name": "Tío Rafa", "look": "rafa", "x": 17, "y": 12, "dir": "left", "exam": "rafa"}, {"id": "dog", "name": "Dog", "animal": "dog", "x": 16, "y": 11, "dir": "left"}, {"id": "spider", "name": "Spider", "animal": "spider", "x": 9, "y": 8, "dir": "down", "fast": true}, {"id": "cat", "name": "Cat", "animal": "cat", "x": 16, "y": 11, "dir": "left"}, {"id": "duck", "name": "Duck", "animal": "duck", "x": 11, "y": 10, "dir": "left"}, {"id": "rabbit", "name": "Rabbit", "animal": "rabbit", "x": 3, "y": 10, "dir": "right"}, {"id": "parrot", "name": "Parrot", "animal": "parrot", "x": 17, "y": 10, "dir": "left"}, {"id": "boss", "name": "BIG Teacher Seba", "look": "giant", "x": 9, "y": 5, "dir": "down", "exam": "boss", "giant": true, "block": [[-1, 0], [1, 0]]}, {"id": "mia", "name": "Mía", "look": "mia", "x": 8, "y": 12, "dir": "down", "exam": "mia"}, {"id": "vitoko", "name": "Vitoko", "look": "vitoko", "x": 5, "y": 4, "dir": "down", "exam": "vitoko"}, {"id": "gateguard", "name": "Guardia", "look": "gateguard", "x": 17, "y": 7, "dir": "left", "exam": "gateguard"}, {"id": "kiosco", "name": "Don Beto", "look": "kiosco", "x": 2, "y": 13, "dir": "up", "exam": "kiosco"}])NPCS[d.id]=Object.assign({},d,{look:d.look?LOOK[d.look]:undefined,
   exam:d.exam==='rafa'?(n=>talkRafa(n)):d.exam==='boss'?(n=>talkBoss(n)):d.exam==='mia'?(n=>talkLostGirl(n)):d.exam==='vitoko'?(n=>talkVitoko(n)):d.exam==='gateguard'?(n=>talkGateGuard(n)):d.exam==='kiosco'?(n=>talkKiosk(n)):undefined,
-  mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.animal?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):d.id==='mia'?(()=>save.phoneGiven?2:1):d.id==='vitoko'?(()=>save.dogGiven?2:1):d.id==='gateguard'?(()=>save.bottleGiven?2:1):d.id==='kiosco'?(()=>save.bottle?2:1):undefined});
+  mark:d.id==='rafa'?(()=>save.rafa===3?2:(save.rafa===1?0:1)):d.id==='boss'?(()=>save.final4?2:1):d.id==='dog'?(()=>save.vitokoAsked&&!save.dogFound?1:0):(d.animal)?(()=>save.rafa===1?(save.photos[d.animal]?2:3):0):d.id==='mia'?(()=>save.phoneGiven?2:1):d.id==='vitoko'?(()=>save.dogGiven?2:1):d.id==='gateguard'?(()=>save.bottleGiven?2:1):d.id==='kiosco'?(()=>save.bottle?2:1):undefined});
 for(const [id,n] of Object.entries(NPCS))n.id=id;
 
 const TILE_TALK={
@@ -1259,6 +1282,19 @@ function drawAnimal(c,kind,cx,fy,s,t,shadow=true){
     else{c.strokeStyle='#222';c.lineWidth=.8;c.beginPath();c.moveTo(-4,-18.4);c.lineTo(-1.6,-18.4);c.moveTo(1.6,-18.4);c.lineTo(4,-18.4);c.stroke();}
     E(c,0,-15.8,1.1,.8,'#f08a9a');c.fillStyle='#fff';c.fillRect(-1,-15,.9,1.5);c.fillRect(.1,-15,.9,1.5);
     c.strokeStyle='rgba(120,100,100,.6)';c.lineWidth=.5;c.beginPath();c.moveTo(-2.4,-15.6);c.lineTo(-6.6,-15);c.moveTo(-2.4,-14.8);c.lineTo(-6.6,-14);c.moveTo(2.4,-15.6);c.lineTo(6.6,-15);c.moveTo(2.4,-14.8);c.lineTo(6.6,-14);c.stroke();
+  }else if(kind==='spider'){
+    const legw=Math.sin(t*14+cx)*1.6;
+    c.strokeStyle='#1a1410';c.lineWidth=1.4;c.lineCap='round';
+    for(const sx of [-1,1])for(let i=0;i<4;i++){
+      const ang=-.5+i*.42,ly=-7-i*.3;
+      c.beginPath();c.moveTo(sx*3,ly);c.lineTo(sx*(9+i*1.6),ly-3+Math.sin(t*14+cx+i)*1.6*sx);c.stroke();
+      c.beginPath();c.moveTo(sx*3,ly);c.lineTo(sx*(9+i*1.6),ly+3+Math.sin(t*14+cx+i+1)*1.6*sx);c.stroke();
+    }
+    c.lineCap='butt';
+    E(c,0,-4,7.4,5.6,'#1a1410');E(c,0,-1.4,4.2,3,'#2a2018');
+    E(c,0,-11,5.6,5.2,'#1a1410');
+    if(!blink){E(c,-2,-12,1.1,1.3,'#ff4d4d');E(c,2,-12,1.1,1.3,'#ff4d4d');E(c,-1.7,-12.4,.35,.35,'#fff');E(c,2.3,-12.4,.35,.35,'#fff');}
+    else{c.strokeStyle='#ff4d4d';c.lineWidth=.7;c.beginPath();c.moveTo(-2.8,-12);c.lineTo(-1.2,-12);c.moveTo(1.2,-12);c.lineTo(2.8,-12);c.stroke();}
   }else if(kind==='parrot'){
     POLY(c,[[-4,-6],[-8,3],[-2,0]],'#2e86de');POLY(c,[[-1,-6],[-3,4],[2,0]],'#e05555');
     E(c,0,-10,6.6,8.4,'#3cb54a');E(c,1.4,-8.6,4,5.4,'#8ee07a');E(c,-4.6,-9,2.4,5.6,'#2a8f3a');
@@ -1362,8 +1398,12 @@ async function awardStar(){
 }
 async function talkNPC(n){
   n.dir=OPP[player.dir];
+  if(state.npcTest){await say(n,'Hi!','¡Hola!');return;}
   if(n.animal){
-    if(n.id==='dog'&&save.vitokoAsked&&!save.dogFound&&!save.dogGiven)return fetchDog(n);
+    if(n.id==='dog'){
+      if(save.vitokoAsked&&!save.dogFound&&!save.dogGiven)return fetchDog(n);
+      await say(n,ANIMALS.dog[2],ANIMALS.dog[3]);return;
+    }
     return takePhoto(n);
   }
   if(n.exam)return n.exam(n);
@@ -1435,7 +1475,7 @@ async function levelUp(l){
     await say(MASCOT,'Tío Rafa has a KEY for you. He is in the Garden!','¡El Tío Rafa tiene una LLAVE para ti. Está en el jardín!');
   }
 }
-const ANIMALS={dog:['dog','perro','Woof woof!','¡Guau guau!'],cat:['cat','gato','Meow!','¡Miau!'],duck:['duck','pato','Quack quack!','¡Cuac cuac!'],rabbit:['rabbit','conejo','Hop hop!','¡Salto, salto!'],parrot:['parrot','loro','Squawk! Hello!','¡Craa! ¡Hola!']};
+const ANIMALS={dog:['dog','perro','Woof woof!','¡Guau guau!'],spider:['spider','araña','Eek! Don\'t squish me!','¡Ay! ¡No me aplastes!'],cat:['cat','gato','Meow!','¡Miau!'],duck:['duck','pato','Quack quack!','¡Cuac cuac!'],rabbit:['rabbit','conejo','Hop hop!','¡Salto, salto!'],parrot:['parrot','loro','Squawk! Hello!','¡Craa! ¡Hola!']};
 const N_PHOTOS=5;
 function photoCount(){return Object.keys(save.photos||{}).length;}
 function wait(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -1458,20 +1498,21 @@ async function takePhoto(n){
   sfx.photo();ui.photo={kind:n.animal,t:0};await wait(2300);ui.photo=null;
   save.photos[n.animal]=true;const k=photoCount();sfx.star();ui.banner={text:'📷 '+k+' / '+N_PHOTOS,t:2.4};writeSave();
   await say(n,A[2]+' A '+A[0]+'!',A[3]+' ¡Un '+A[1]+'!');
-  if(k>=N_PHOTOS){save.rafa=2;writeSave();await say(MASCOT,'I have all 5 photos! Back to Tío Rafa!','¡Tengo las 5 fotos! ¡Vuelve con el Tío Rafa!');}
+  if(k>=N_PHOTOS){save.rafa=2;writeSave();await say(MASCOT,'I have all 5 photos! Go to Tío Rafa to get the KEY. He will not give it to you unless you talk to him!','¡Tengo las 5 fotos! Ve donde el Tío Rafa a buscar la LLAVE. ¡No te la dará si no hablas con él!');}
 }
 async function talkRafa(n){
   if(save.rafa===0){
     await say(n,'Hello, {n}! I am Tío Rafa, the school photographer.','¡Hola, {n}! Soy el Tío Rafa, el fotógrafo del colegio.');
-    await say(n,'I need photos of 5 animals: a DOG, a CAT, a DUCK, a RABBIT and a PARROT.','Necesito fotos de 5 animales: un PERRO, un GATO, un PATO, un CONEJO y un LORO.');
+    await say(n,'I need photos of 5 animals: a SPIDER, a CAT, a DUCK, a RABBIT and a PARROT.','Necesito fotos de 5 animales: una ARAÑA, un GATO, un PATO, un CONEJO y un LORO.');
     await say(n,'Find them at school and talk to them to take the photo!','¡Búscalos en el colegio y háblales para sacar la foto!');
     await say(n,'Come back with the 5 photos and I will give you the LAST KEY!','¡Vuelve con las 5 fotos y te daré la ÚLTIMA LLAVE!');
     save.rafa=1;writeSave();sfx.star();ui.banner={text:'📷 0 / '+N_PHOTOS,t:2.4};return;
   }
   if(save.rafa===1){
     const k=photoCount();
-    await say(n,'Photos: '+k+' of 5. A dog, a cat, a duck, a rabbit and a parrot!','Fotos: '+k+' de 5. ¡Un perro, un gato, un pato, un conejo y un loro!');
-    await say(n,'They are in the Patio, the Cafeteria, the Garden, the Science Lab and the Music Room.','Están en el patio, la cafetería, el jardín, el laboratorio de ciencias y la sala de música.');return;
+    await say(n,'Photos: '+k+' of 5. A spider, a cat, a duck, a rabbit and a parrot!','Fotos: '+k+' de 5. ¡Una araña, un gato, un pato, un conejo y un loro!');
+    await say(n,"They are in the Teachers' Room, the Cafeteria, the Garden, the Science Lab and the Music Room.",'Están en la sala de profesores, la cafetería, el jardín, el laboratorio de ciencias y la sala de música.');
+    await say(n,'The spider is very fast, it will not be easy to catch it!','¡La araña es muy rápida, no será fácil atraparla!');return;
   }
   if(save.rafa===2){
     await say(n,'WOW! You have the 5 photos! You are a great photographer!','¡GUAU! ¡Tienes las 5 fotos! ¡Eres un gran fotógrafo!');
@@ -1915,18 +1956,18 @@ function updateNPCs(dt){
       continue;
     }
     if(n.moving){
-      n.anim+=dt*10;
-      const gx=n.tx*TS,gy=n.ty*TS,dx=gx-n.px,dy=gy-n.py,dist=Math.hypot(dx,dy),budget=56*dt;
-      if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=1.4+Math.random()*3;}
+      n.anim+=dt*(n.fast?18:10);
+      const gx=n.tx*TS,gy=n.ty*TS,dx=gx-n.px,dy=gy-n.py,dist=Math.hypot(dx,dy),budget=(n.fast?168:56)*dt;
+      if(dist<=budget){n.px=gx;n.py=gy;n.x=n.tx;n.y=n.ty;n.moving=false;n.anim=0;n.wait=n.fast?.15+Math.random()*.35:1.4+Math.random()*3;}
       else{n.px+=dx/dist*budget;n.py+=dy/dist*budget;}
     }else{
       if(ui.locked)continue;
       n.wait-=dt;
       if(n.wait<=0){
-        n.wait=1.4+Math.random()*3;
-        if(Math.random()<.55)for(const dname of shuffle(Object.keys(DIRS))){
+        n.wait=n.fast?.15+Math.random()*.35:1.4+Math.random()*3;
+        if(Math.random()<(n.fast?.9:.55))for(const dname of shuffle(Object.keys(DIRS))){
           const [dx,dy]=DIRS[dname],nx=n.x+dx,ny=n.y+dy;
-          if(Math.abs(nx-n.hx)>1||Math.abs(ny-n.hy)>1)continue;
+          if(Math.abs(nx-n.hx)>(n.fast?3:1)||Math.abs(ny-n.hy)>(n.fast?3:1))continue;
           if(!passable(nx,ny))continue;
           if(player.x===nx&&player.y===ny)continue;
           if(player.moving&&player.tx===nx&&player.ty===ny)continue;
@@ -2044,6 +2085,7 @@ function drawHUD(c){
     if(save.rafa===1)chip('📷 '+photoCount()+'/'+N_PHOTOS);
   }
   if(state.cheat){c.fillStyle='#e05555';rr(c,210,13,38,20,10);c.fill();c.strokeStyle='#fff';c.lineWidth=1.5;rr(c,210,13,38,20,10);c.stroke();c.font=F(11,'bold');c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText('REV',229,23.5);}
+  if(state.npcTest){const bx=state.cheat?252:210;c.fillStyle='#8e44ad';rr(c,bx,13,58,20,10);c.fill();c.strokeStyle='#fff';c.lineWidth=1.5;rr(c,bx,13,58,20,10);c.stroke();c.font=F(11,'bold');c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText('NPC TEST',bx+29,23.5);}
   if(ui.banner){const b=ui.banner,a=Math.min(1,b.t*2),k=1+Math.max(0,b.t-2)*.7;c.globalAlpha=a;c.font=F(30*k,'bold');c.fillStyle='#000';c.fillText(b.text,CW/2+2,84+2);c.fillStyle=GOLD;c.fillText(b.text,CW/2,84);c.globalAlpha=1;}
   c.restore();
 }
@@ -2085,8 +2127,8 @@ function drawGame(c){
   }
   const ents=cur.npcList.filter(n=>!n.fleeing).map(n=>({y:n.py!==undefined?n.py:n.y*TS,draw:()=>{
     const px=n.px!==undefined?n.px:n.x*TS,py=n.py!==undefined?n.py:n.y*TS;
-    const bob=n.moving?Math.abs(Math.sin(n.anim))*2:Math.sin(time*2+n.x)*.6;
-    const walk=n.moving?Math.sin(n.anim*1.6):0;
+    const bob=n.dance?Math.abs(Math.sin(time*7+n.x))*4:n.moving?Math.abs(Math.sin(n.anim))*2:Math.sin(time*2+n.x)*.6;
+    const walk=n.dance?Math.sin(time*7+n.x)*1.4:n.moving?Math.sin(n.anim*1.6):0;
     if(n.animal)drawAnimalOutlined(c,n.animal,px+16,py+TS-2,1.35,time);
     else if(n.giant)drawGiant(c,n,px+16,py+TS-1);
     else drawPersonOutlined(c,px+16,py+TS-1,1,n.look,n.dir,bob,true,walk);
@@ -2538,7 +2580,7 @@ function helpHint(){
   }
   if(!save.key){
     if(!save.rafa)return['Find Tío Rafa in the Garden. He needs your help!','Busca al Tío Rafa en el jardín. ¡Necesita tu ayuda!'];
-    return['Take photos of the 5 animals (dog, cat, duck, rabbit, parrot) and bring them to Tío Rafa for the KEY!','¡Sácale fotos a los 5 animales (perro, gato, pato, conejo, loro) y llévaselas al Tío Rafa por la LLAVE!'];
+    return['Take photos of the 5 animals (spider, cat, duck, rabbit, parrot) and bring them to Tío Rafa for the KEY!','¡Sácale fotos a los 5 animales (araña, gato, pato, conejo, loro) y llévaselas al Tío Rafa por la LLAVE!'];
   }
   if(!save.sword)return['Look for a sword hidden in a corner of the Garden. You will need it for the last door!','Busca una espada escondida en una esquina del jardín. ¡La vas a necesitar para la última puerta!'];
   if(!save.final4)return['Read the books in the Secret Library, then open your backpack at the DANGER door for your final test!','¡Lee los libros de la Biblioteca Secreta, luego abre tu mochila en la puerta de PELIGRO para tu prueba final!'];
@@ -2566,6 +2608,7 @@ function applyCode(){
   if(scene!=='settings')return;
   const v=codeEl.value.trim();codeEl.value='';
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
+  else if(v==='2179'){state.npcTest=!state.npcTest;settings.ok=true;settings.msg=state.npcTest?'🧪 ¡Modo prueba NPC ACTIVADO! Los NPC solo dirán "Hola".':'🧪 Modo prueba NPC desactivado.';sfx.star();}
   else if(v==='001'){
     for(const lv of [1,2,3])for(const q of LV[lv])save.done[q]=true;
     save.final1=true;save.final2=true;save.final3=true;save.level=4;save.key=true;save.rafa=3;save.money=(save.money||0)+80;
