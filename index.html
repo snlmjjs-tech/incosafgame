@@ -362,7 +362,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
      {x:0,y:7,to:'final',tx:14,ty:3,dir:'left',label:'EXIT',gate:true,back:[1,0]}],
     npcs:[]}});
   MAPS.garden.swordAt={x:17,y:3};
-  MAPS.library.wheelAt={x:9,y:12};
+  MAPS.art.wheelAt={x:17,y:2};
   MAPS.patio.coins=[{x:6,y:6}];MAPS.plaza.coins=[{x:8,y:3}];MAPS.cafe.coins=[{x:16,y:10}];
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');MAPS.teachers.npcs.push('spider');
   MAPS.plaza.npcs.push('mia','vitoko');MAPS.computer.phoneAt={x:10,y:9};
@@ -2606,7 +2606,7 @@ function drawVision(c){
     c.font=F(24,'bold');c.fillStyle=GOLD;c.textAlign='center';c.textBaseline='middle';c.fillText('🎡 Ruleta de monedas / Coin Wheel',CW/2,50);
     const cx=CW/2,cy=CH/2-10,R=130,segs=WHEEL_SEGS,n=segs.length;
     const dur=2.4,prog=Math.min(1,t/dur),ease=1-Math.pow(1-prog,3);
-    const targetAngle=-((v.idx+.5)/n)*TAU;
+    const targetAngle=-Math.PI/2-((v.idx+.5)/n)*TAU;
     const angle=4*TAU*ease+targetAngle*ease;
     c.save();c.translate(cx,cy);c.rotate(angle);
     const colors=['#e05555','#f0a030','#f7d44a','#5cb85c','#3e8ed0','#9b6fd6','#7a7a7a'];
