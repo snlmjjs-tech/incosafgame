@@ -120,7 +120,7 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,questMistakes:{},bossDoorMap:{},bossDoorProgress:0,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,questMistakes:{},bossDoorMap:{},bossDoorProgress:0,incosafitoTaken:false,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
@@ -1725,6 +1725,12 @@ async function bossHallScene(idx){
   }else if(idx===2){
     await say(PLAYER,'A forest... and who is that in the middle?','Un bosque... ¿y quién es ese que está en el medio?');
     await say(MASCOT,'AAAAH! Let me go!','¡AAAAH! ¡Suéltame!');
+    ui.vision={kind:'forestgrab',t:0};
+    sfx.bad();
+    await wait(1300);
+    save.incosafitoTaken=true;writeSave();
+    ui.vision={kind:'forest2',t:0};
+    await wait(500);
     await say(PLAYER,'NOOOOO, INCOSAFITO! WHO ARE YOU?!','¡NOOOOO, INCOSAFITO! ¡¿QUIÉN ERES TÚ?!');
     await say(SHADOW_SPK,'If you want to see your friend again, you must pass the final mission.','Si quieres ver a tu amigo nuevamente, deberás pasar la última misión.');
     await say(PLAYER,"I'll check the other doors to see what happens.",'Veré las otras puertas a ver qué pasa.');
@@ -1779,6 +1785,7 @@ async function talkBoss(n){
   await say(n,'IMPOSSIBLE! You passed my test!','¡IMPOSIBLE! ¡Pasaste mi prueba!');
   await say(n,'Fine... you may LEAVE the school, {n}.','Está bien... puedes SALIR del colegio, {n}.');
   await say(n,'You are the best student of INCOSAF!','¡Eres el mejor estudiante de INCOSAF!');
+  await say(n,"In PART TWO you will see where INCOSAFITO went. I don't have him, but I will give you a clue!",'¡EN LA PARTE DOS VERÁS DÓNDE SE FUE INCOSAFITO! Yo no lo tengo, pero te daré una pista.');
   save.final4=true;writeSave();await ending();
 }
 async function ending(){
@@ -1890,6 +1897,7 @@ function fetchLeaderboard(){
     leaderboardStatus='ok';
   }).catch(()=>{leaderboardStatus='error';});
 }
+function viewRanking(){initAudio();fetchLeaderboard();scene='board';}
 async function intro(){
   save.intro=true;
   await say(MASCOT,'Hello, {n}! I am INCOSAFITO, the mascot of INCOSAF!','¡Hola, {n}! ¡Soy INCOSAFITO, la mascota de INCOSAF!');
@@ -2243,9 +2251,9 @@ function drawGame(c){
       c.fillStyle=done?'#fff':NAVY;c.font=F(12,'bold');c.textAlign='center';c.textBaseline='middle';c.fillText(mk===3?'📷':(done?'✓':'!'),px+16,by+1);
     }}}));
   ents.push({y:player.py,draw:()=>drawPlayer(c)});
-  ents.push({y:followerPos().y,draw:()=>drawFollower(c)});
+  if(!save.incosafitoTaken)ents.push({y:followerPos().y,draw:()=>drawFollower(c)});
   if(save.dogFound&&!save.dogGiven)ents.push({y:followerPos(58).y,draw:()=>drawDogFollower(c)});
-  ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
+  if(!ui.vision)ents.sort((a,b)=>a.y-b.y).forEach(e=>e.draw());
   for(const n of cur.npcList){
     if(!n.fleeing)continue;
     const alpha=Math.max(0,1-n.fleeT/1.3),flap=Math.sin(n.fleeT*22)*3;
@@ -2282,11 +2290,12 @@ function drawTitle(c){
   if(mascotOK())c.drawImage(mascot,CW/2-w/2,338-h-bob,w,h);
   const items=[{id:'new',label:'▶  Jugar / Play',on:true}];
   if(hasSave)items.push({id:'cont',label:'📂  Continuar / Continue',on:true});
+  items.push({id:'board',label:'🏆  Ver Ranking / Ranking',on:true});
   items.forEach((it,i)=>{
     const bw=270,bh=36,x=CW/2-bw/2,y=356+i*44,sel=i===titleSel;
     mvWindow(c,x,y,bw,bh,14,{selected:sel,gems:false});
     c.font=F(18,'bold');c.fillStyle=sel?NAVY:'#fff';c.fillText(it.label,CW/2,y+bh/2+1);
-    hits.push({x,y,w:bw,h:bh,fn:()=>{titleSel=i;startGame(it.id==='cont');},hover:()=>{if(titleSel!==i){titleSel=i;sfx.pick();}}});
+    hits.push({x,y,w:bw,h:bh,fn:()=>{titleSel=i;if(it.id==='board')viewRanking();else startGame(it.id==='cont');},hover:()=>{if(titleSel!==i){titleSel=i;sfx.pick();}}});
   });
   c.font=F(11);c.fillStyle='rgba(255,255,255,.75)';
   c.fillText('Flechas / WASD: caminar · Espacio / Enter: hablar · H: ayuda · L: voz · M: música · O: configuración',CW/2,CH-12);
@@ -2496,20 +2505,44 @@ function drawVision(c){
     c.restore();
     c.textAlign='center';c.textBaseline='middle';c.font=F(12,'italic');c.fillStyle='#555';c.fillText('¿?',0,h/2-16);
     c.restore();
-  }else if(v.kind==='forest'){
+  }else if(v.kind==='forest'||v.kind==='forestgrab'||v.kind==='forest2'){
     const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0f2e14');g.addColorStop(1,'#0a1c0d');c.fillStyle=g;c.fillRect(0,0,CW,CH);
     c.font=F(60);c.textAlign='center';c.textBaseline='alphabetic';
     for(const [x,y,s] of [[50,300,1.2],[150,260,.9],[260,320,1.3],[400,270,1],[500,310,1.15],[590,250,.9]]){c.save();c.translate(x,y);c.scale(s,s);c.fillText('🌲',0,0);c.restore();}
-    c.textAlign='center';c.textBaseline='middle';
-    c.fillStyle='#0a0a0c';c.beginPath();c.ellipse(CW/2,150,17,20,0,0,TAU);c.fill();
-    POLY(c,[[CW/2-30,300],[CW/2-15,140],[CW/2+15,140],[CW/2+30,300]],'#0a0a0c');
-    E(c,CW/2-4,148,1.8,1.3,'#ff2b2b');E(c,CW/2+4,148,1.8,1.3,'#ff2b2b');
+    if(v.kind==='forest'){
+      c.textAlign='center';c.textBaseline='middle';
+      c.fillStyle='#0a0a0c';c.beginPath();c.ellipse(CW/2,150,17,20,0,0,TAU);c.fill();
+      POLY(c,[[CW/2-30,300],[CW/2-15,140],[CW/2+15,140],[CW/2+30,300]],'#0a0a0c');
+      E(c,CW/2-4,148,1.8,1.3,'#ff2b2b');E(c,CW/2+4,148,1.8,1.3,'#ff2b2b');
+      drawPersonOutlined(c,CW/2-90,320,2.4,PLAYER.look,'right',0,true,0,false,true);
+      if(mascotOK()){const w=44,h=44*mAR();drawImageOutlined(c,mascot,CW/2-70,270,w,h,false);}
+    }else if(v.kind==='forestgrab'){
+      const p=Math.min(1,t/1.1);
+      const shx=CW/2+p*80,fy=150;
+      c.textAlign='center';c.textBaseline='middle';
+      c.fillStyle='#0a0a0c';c.beginPath();c.ellipse(shx,fy,17,20,0,0,TAU);c.fill();
+      POLY(c,[[shx-30,300],[shx-15,fy-10],[shx+15,fy-10],[shx+30,300]],'#0a0a0c');
+      E(c,shx-4,fy-2,1.8,1.3,'#ff2b2b');E(c,shx+4,fy-2,1.8,1.3,'#ff2b2b');
+      drawPersonOutlined(c,CW/2-90,320,2.4,PLAYER.look,'right',0,true,0,false,true);
+      if(mascotOK()&&p<1){const w=Math.max(4,44*(1-p*.8)),h=w*mAR();
+        const mx=CW/2-70+p*(shx-(CW/2-70)),my=270-p*40;
+        c.globalAlpha=Math.max(0,1-p*.9);drawImageOutlined(c,mascot,mx,my,w,h,false);c.globalAlpha=1;}
+      if(p>=.55){c.font=F(28*(p-.5)*2);c.fillStyle='rgba(255,255,255,'+Math.min(.8,(p-.55)*2)+')';c.fillText('💨',shx+30,fy+40);}
+    }else{
+      drawPersonOutlined(c,CW/2-30,320,2.6,PLAYER.look,'down',0,true,0,false,true);
+      c.font=F(22);c.fillStyle='rgba(255,255,255,.5)';c.textAlign='center';c.fillText('🍃',CW/2+70,180+Math.sin(t*3)*6);
+    }
   }else if(v.kind==='classroom'){
     c.fillStyle='#8a5a30';c.fillRect(0,0,CW,CH);
-    c.fillStyle='#6d4726';c.fillRect(0,0,CW,120);
-    c.fillStyle='#2f5d3a';rr(c,60,20,180,70,4);c.fill();
-    c.font=F(70);c.textAlign='center';c.textBaseline='alphabetic';c.fillText('🏫',CW/2,260);
-    c.font=F(16,'bold');c.fillStyle='#fff';c.textAlign='center';c.fillText('Sala de clases',CW/2,300);
+    c.fillStyle='#6d4726';c.fillRect(0,0,CW,90);
+    c.fillStyle='#2f5d3a';rr(c,240,18,160,58,4);c.fill();
+    c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=1.4;
+    c.beginPath();c.moveTo(255,40);c.lineTo(340,40);c.moveTo(255,58);c.lineTo(320,58);c.stroke();
+    const desk=(x,y)=>{c.fillStyle='#8a5a30';RR(c,x-16,y+6,32,5,1,'#c99a5b');RR(c,x-16,y+11,32,22,2,'#7a5a34');c.fillStyle='#5a3f22';c.fillRect(x-13,y+33,3,10);c.fillRect(x+10,y+33,3,10);};
+    for(const [x,y] of [[110,300],[190,300],[460,300],[540,300],[110,370],[190,370],[460,370],[540,370]])desk(x,y);
+    drawPersonOutlined(c,320,220,1.9,LOOK.pupil1,'down',0,true,0,false,false);
+    drawPersonOutlined(c,360,220,1.9,LOOK.pupil2,'down',0,true,0,false,false);
+    drawPersonOutlined(c,CW/2,400,2,PLAYER.look,'up',0,true,0,false,true);
   }
   if(t<.35){c.fillStyle='rgba(0,0,0,'+(1-t/.35)+')';c.fillRect(0,0,CW,CH);}
   c.restore();
