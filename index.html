@@ -120,13 +120,13 @@ function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify({music:sta
 function applyVol(){if(master)master.gain.value=state.vol;}
 function volStep(d){state.vol=Math.min(1,Math.max(0,Math.round((state.vol+d)*10)/10));applyVol();savePrefs();sfx.pick();}
 const SAVE_KEY='incosafin_save_v2';
-const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,questMistakes:{},gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
+const newSave=()=>({done:{},level:1,final1:false,final2:false,final3:false,mistakes:0,intro:false,name:'',course:'',avatar:0,seen2:false,seen3:false,seenF:false,seen4:false,rafa:0,photos:{},key:false,final4:false,bossTries:0,phoneFound:false,phoneGiven:false,money:0,bottle:false,bottleGiven:false,guardAsked:false,vitokoAsked:false,dogFound:false,dogGiven:false,parrotFled:false,leash:false,sword:false,apple:false,coins:{},memoryDone:false,questMistakes:{},bossDoorMap:{},bossDoorProgress:0,gateLibrary:false,gateBoss:false,map:'patio',x:9,y:12,dir:'up'});
 let save=newSave();
 function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE_KEY));return s&&s.done?Object.assign(newSave(),s):null;}catch(e){return null;}}
 function writeSave(){try{save.map=cur.id;save.x=player.x;save.y=player.y;save.dir=player.dir;localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let hasSave=!!loadSave();
 let scene='title', time=0, titleSel=0, endT=0, autoTalkNpc=null;
-const ui={mode:'play',dlg:null,choice:null,locked:false,fade:0,fadeTarget:null,fadeRes:null,banner:null};
+const ui={mode:'play',dlg:null,choice:null,locked:false,fade:0,fadeTarget:null,fadeRes:null,banner:null,vision:null};
 const held=[]; let hits=[]; const parts=[];
 const player={x:9,y:12,px:9*TS,py:12*TS,tx:9,ty:12,dir:'up',moving:false,anim:0};
 const MASCOT={name:'INCOSAFITO',mascot:true};
@@ -312,7 +312,7 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.garden.doors.push({x:19,y:7,to:'plaza',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final2,
     msg:()=>['The Plaza gate is locked! I must pass the Level 2 exam first.','¡El portón de la plaza está cerrado! Primero debo aprobar el examen del Nivel 2.']});
   MAPS.plaza.doors.push({x:0,y:7,to:'garden',tx:18,ty:7,dir:'left',gate:true});
-  Object.assign(MAPS,{"final": {"id": "final", "name": "Last Courtyard", "es": "El último patio (Nivel 5)", "floor": "cobble", "wall": "#2a1450", "facade": "#d9c8f0", "roof": true, "theme": 4, "dusk": "rgba(30,10,80,.30)", "rows": ["####################", "WWWWWWWWWWWWWWWWWWWW", "WWWWWdWWWWWWWWdWWWWW", "HGGGccccccccccccGGGH", "HGKGcccJccccJcccGKGH", "HGGGccccccccccccGGGH", "HcccccNccccccNcccccH", "gccccccccOOccccccccH", "HccccccccOOccccccccH", "HcccccNccccccNcccccH", "HGGGcccJccccJcccGGGH", "HGKGccccccccccccGKGH", "HGGGcccccXXcccccGGGH", "HccccccccccccccccccH", "HHHHHHHHHHHHHHHHHHHH"], "doors": [{"x": 5, "y": 2, "to": "books", "tx": 9, "ty": 13, "dir": "up", "label": "SECRET LIBRARY"}, {"x": 14, "y": 2, "to": "boss", "tx": 9, "ty": 13, "dir": "up", "label": "DANGER!"}], "npcs": [], "tileTalk": {"O": [["A dark fountain. The night is quiet... too quiet.", "Una fuente oscura. La noche está tranquila... demasiado tranquila."]]}}, "books": {"id": "books", "name": "Secret Library", "es": "La biblioteca secreta", "floor": "brown", "wall": "#463c96", "theme": 4, "dusk": "rgba(40,20,90,.22)", "rows": ["####################", "#bbbbbbbbbbbbbbbbbb#", "#P................P#", "#..................#", "#b................b#", "#b......RRRR......b#", "#b....V.RRRR.V....b#", "#b......RRRR......b#", "#b......RRRR......b#", "#..................#", "#...TT........TT...#", "#..................#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 5, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": [], "books": {"6,6": "conn", "13,6": "wh"}, "tileTalk": {"V": [["", ""]]}}, "boss": {"id": "boss", "name": "Secret Room", "es": "La sala secreta", "floor": "brown", "wall": "#3a0d0d", "theme": 5, "dusk": "rgba(150,0,0,.20)", "pulse": true, "rows": ["####################", "#WWWWWWWWWWWWWWWWWW#", "#P................P#", "#..................#", "#..................#", "#..................#", "#..................#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 14, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": ["boss"]}});
+  Object.assign(MAPS,{"final": {"id": "final", "name": "Last Courtyard", "es": "El último patio (Nivel 5)", "floor": "cobble", "wall": "#2a1450", "facade": "#d9c8f0", "roof": true, "theme": 4, "dusk": "rgba(30,10,80,.30)", "rows": ["####################", "WWWWWWWWWWWWWWWWWWWW", "WWWWWdWWWWWWWWdWWWWW", "HGGGccccccccccccGGGH", "HGKGcccJccccJcccGKGH", "HGGGccccccccccccGGGH", "HcccccNccccccNcccccH", "gccccccccOOccccccccH", "HccccccccOOccccccccH", "HcccccNccccccNcccccH", "HGGGcccJccccJcccGGGH", "HGKGccccccccccccGKGH", "HGGGcccccXXcccccGGGH", "HccccccccccccccccccH", "HHHHHHHHHHHHHHHHHHHH"], "doors": [{"x": 5, "y": 2, "to": "books", "tx": 9, "ty": 13, "dir": "up", "label": "SECRET LIBRARY"}, {"x": 14, "y": 2, "to": "bosshall", "tx": 9, "ty": 13, "dir": "up", "label": "DANGER!"}], "npcs": [], "tileTalk": {"O": [["A dark fountain. The night is quiet... too quiet.", "Una fuente oscura. La noche está tranquila... demasiado tranquila."]]}}, "books": {"id": "books", "name": "Secret Library", "es": "La biblioteca secreta", "floor": "brown", "wall": "#463c96", "theme": 4, "dusk": "rgba(40,20,90,.22)", "rows": ["####################", "#bbbbbbbbbbbbbbbbbb#", "#P................P#", "#..................#", "#b................b#", "#b......RRRR......b#", "#b....V.RRRR.V....b#", "#b......RRRR......b#", "#b......RRRR......b#", "#..................#", "#...TT........TT...#", "#..................#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 5, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": [], "books": {"6,6": "conn", "13,6": "wh"}, "tileTalk": {"V": [["", ""]]}}, "boss": {"id": "boss", "name": "Secret Room", "es": "La sala secreta", "floor": "brown", "wall": "#3a0d0d", "theme": 5, "dusk": "rgba(150,0,0,.20)", "pulse": true, "rows": ["####################", "#WWWWWWWWWWWWWWWWWW#", "#P................P#", "#..................#", "#..................#", "#..................#", "#..................#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#......RRRRR.......#", "#..................#", "#P................P#", "#########d##########"], "doors": [{"x": 9, "y": 14, "to": "final", "tx": 14, "ty": 3, "dir": "down", "label": "EXIT"}], "npcs": ["boss"]}});
   MAPS.plaza.rows[7]=MAPS.plaza.rows[7].slice(0,19)+'g';
   MAPS.plaza.doors.push({x:19,y:7,to:'level4',tx:1,ty:7,dir:'right',gate:true,back:[-1,0],req:()=>save.final3,
     msg:()=>['The last gate is locked! I must pass the Level 3 exam first.','¡El último portón está cerrado! Primero debo aprobar el examen del Nivel 3.']});
@@ -336,6 +336,31 @@ for(const [k,l] of Object.entries({patio:['cleaner','pupil1'],class:['pupil2'],l
   MAPS.final.doors[1].itemGate={item:'sword',flag:'gateBoss',
     prompt:['This padlock looks tough. Let me check my backpack...','Este candado se ve difícil. Déjame revisar mi mochila...'],
     fail:["This won't break the padlock...",'Esto no rompe el candado...']};
+  Object.assign(MAPS,{bosshall:{id:'bosshall',name:'??? Hall',es:'El vestíbulo de las puertas',floor:'brown',wall:'#1a1030',facade:'#3a2a6b',roof:true,theme:5,dusk:'rgba(40,0,60,.35)',
+    rows:[
+     '####################',
+     'WWWWWWWWWWWWWWWWWWWW',
+     'WdWWWdWWWdWWWdWWWdWW',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'gccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HccccccccccccccccccH',
+     'HHHHHHHHHHHHHHHHHHHH'],
+    doors:[
+     {x:1,y:2,dir:'up',label:'1',custom:(d,bb)=>bossHallDoor(1,d,bb)},
+     {x:5,y:2,dir:'up',label:'2',custom:(d,bb)=>bossHallDoor(2,d,bb)},
+     {x:9,y:2,dir:'up',label:'3',custom:(d,bb)=>bossHallDoor(3,d,bb)},
+     {x:13,y:2,dir:'up',label:'4',custom:(d,bb)=>bossHallDoor(4,d,bb)},
+     {x:17,y:2,dir:'up',label:'5',custom:(d,bb)=>bossHallDoor(5,d,bb)},
+     {x:0,y:7,to:'final',tx:14,ty:3,dir:'left',label:'EXIT',gate:true,back:[1,0]}],
+    npcs:[]}});
   MAPS.garden.swordAt={x:17,y:3};
   MAPS.patio.coins=[{x:6,y:6}];MAPS.plaza.coins=[{x:8,y:3}];MAPS.cafe.coins=[{x:16,y:10}];
   MAPS.garden.npcs.push('rafa','duck');MAPS.patio.npcs.push('dog');MAPS.cafe.npcs.push('cat');MAPS.lab.npcs.push('rabbit');MAPS.music.npcs.push('parrot');MAPS.teachers.npcs.push('spider');
@@ -1342,6 +1367,11 @@ function drawPortrait(c,spk,x,y,w,h){
   if(spk.mascot){
     if(mascotOK()){const ar=mAR();let ih=h-6,iw=ih*ar;if(iw>w-6){iw=w-6;ih=iw/ar;}c.drawImage(mascot,x+(w-iw)/2,y+h-ih-3,iw,ih);}
   }else if(spk.animal){drawAnimal(c,spk.animal,x+w/2,y+h-8,3.4,time);
+  }else if(spk.silhouette){
+    const cx=x+w/2,topY=y+h*.16,botY=y+h-3,rng=botY-topY;
+    E(c,cx,topY+rng*.2,w*.15,rng*.2,'#0a0a0c');
+    POLY(c,[[cx-w*.24,botY],[cx-w*.13,topY+rng*.34],[cx+w*.13,topY+rng*.34],[cx+w*.24,botY]],'#0a0a0c');
+    E(c,cx-4,topY+rng*.18,1.6,1.1,'#ff3b3b');E(c,cx+4,topY+rng*.18,1.6,1.1,'#ff3b3b');
   }else{
     const look=normLook(spk.look),localTop=-58-(look.hs==='pompadour'?4:look.hs==='swept'?4:0),localBottom=-6,range=localBottom-localTop,zoom=1.08;
     const s=h*zoom/range,fy=y+h+localBottom*s,cx=x+w/2;
@@ -1682,6 +1712,46 @@ async function runBossQuiz(n,quiz){
   }
   return true;
 }
+const SHADOW_SPK={name:'???',silhouette:true};
+async function bossHallScene(idx){
+  ui.vision={kind:['dark','desert','forest','classroom'][idx],t:0};
+  await wait(1400);
+  if(idx===0){
+    await say(PLAYER,"It's too dark, I can't see anything...",'Está muy oscuro, no veo nada...');
+  }else if(idx===1){
+    await say(PLAYER,'A desert? There is only sand and cactus here...','¿Un desierto? Aquí solo hay arena y cactus...');
+    await say(PLAYER,'Wait, is that a photo? I can only see some hair!','Espera, ¿es una foto? ¡Solo se ve un poco de pelo!');
+    await say(PLAYER,'What could this be? I better keep checking the other doors.','¿Qué puede ser esto? Mejor sigo viendo las otras puertas.');
+  }else if(idx===2){
+    await say(PLAYER,'A forest... and who is that in the middle?','Un bosque... ¿y quién es ese que está en el medio?');
+    await say(MASCOT,'AAAAH! Let me go!','¡AAAAH! ¡Suéltame!');
+    await say(PLAYER,'NOOOOO, INCOSAFITO! WHO ARE YOU?!','¡NOOOOO, INCOSAFITO! ¡¿QUIÉN ERES TÚ?!');
+    await say(SHADOW_SPK,'If you want to see your friend again, you must pass the final mission.','Si quieres ver a tu amigo nuevamente, deberás pasar la última misión.');
+    await say(PLAYER,"I'll check the other doors to see what happens.",'Veré las otras puertas a ver qué pasa.');
+  }else if(idx===3){
+    const S1={name:'Beto',look:LOOK.pupil1},S2={name:'Emi',look:LOOK.pupil2};
+    await say(S1,'Have you seen Teacher Seba?','¿Has visto a Mr. Seba?');
+    await say(S2,'No, I think he must be in the other room. I heard they are waiting for {n}...','No, creo que debe estar en la otra sala. Escuché que te están esperando a ti, {n}...');
+    await say(S2,'If {n} does not go, INCOSAFITO will never exist again!','¡Si {n} no va, INCOSAFITO jamás existirá!');
+    await say(PLAYER,'????????','????????');
+    await say(S1,'GO NOW!','¡VE AHORA!');
+  }
+  ui.vision=null;
+}
+async function bossHallDoor(num,d,bounceBack){
+  save.bossDoorMap=save.bossDoorMap||{};
+  if(save.bossDoorProgress===undefined)save.bossDoorProgress=0;
+  let idx=save.bossDoorMap[num];
+  if(idx===undefined){
+    idx=save.bossDoorProgress;
+    save.bossDoorMap[num]=idx;
+    save.bossDoorProgress=idx+1;
+    writeSave();
+  }
+  if(idx>=4){await goMap('boss',9,13,'up');return;}
+  await bossHallScene(idx);
+  bounceBack();
+}
 async function bossDeath(n){
   await say(n,'THREE MISTAKES! YOU ARE... DEAD!','¡TRES ERRORES! ¡ESTÁS... MUERTO!');
   await say(n,'Go back and READ THE BOOKS again!','¡Vuelve y LEE LOS LIBROS otra vez!');
@@ -1940,6 +2010,7 @@ function onArrive(){
       player.x=player.tx=d.x+b[0];player.y=player.ty=d.y+b[1];player.px=player.x*TS;player.py=player.y*TS;
       player.dir=b[0]<0?'left':b[0]>0?'right':'down';resetTrail();
     };
+    if(d.custom){await d.custom(d,bounceBack);return;}
     if(d.req&&!d.req()&&!state.cheat&&!state.npcTest){
       sfx.bad();
       const m=d.msg();await say(PLAYER,m[0],m[1]);
@@ -2122,6 +2193,7 @@ function drawHUD(c){
 }
 function drawGame(c){
   c.drawImage(cur.layer,0,0,CW,CH);
+  if(ui.vision)drawVision(c);
   if(cur.id==='patio'||cur.id==='plaza'){
     c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=1.5;
     for(let i=0;i<3;i++){const r=((time*14+i*8)%24)+4;c.globalAlpha=1-r/28;c.beginPath();c.arc(320,256,r,0,TAU);c.stroke();}
@@ -2403,6 +2475,45 @@ function drawOverlays(c){
     c.font=F(30,'bold');c.fillStyle='#fff';c.fillText('¡MUERTO! / YOU DIED',CW/2,CH/2+52);
   }
 }
+function drawVision(c){
+  const v=ui.vision;if(!v)return;
+  const t=v.t;
+  c.save();
+  if(v.kind==='dark'){
+    c.fillStyle='#050505';c.fillRect(0,0,CW,CH);
+    c.textAlign='center';c.textBaseline='middle';c.font=F(60);c.fillStyle='rgba(255,255,255,.08)';c.fillText('?',CW/2,CH/2);
+  }else if(v.kind==='desert'){
+    const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#f3d38a');g.addColorStop(1,'#d8a24e');c.fillStyle=g;c.fillRect(0,0,CW,CH);
+    c.font=F(30);c.fillStyle='#f7c600';c.textAlign='center';c.fillText('☀️',CW-70,60);
+    c.font=F(46);c.textAlign='center';c.textBaseline='alphabetic';
+    for(const [x,y,s] of [[90,300,1],[520,320,1.15],[210,260,.85],[360,300,1.05]]){c.save();c.translate(x,y);c.scale(s,s);c.fillText('🌵',0,0);c.restore();}
+    c.save();c.translate(CW/2,190);c.rotate(-.04);
+    const w=150,h=178;c.fillStyle='rgba(0,0,0,.3)';rr(c,-w/2+5,-h/2+6,w,h,8);c.fill();
+    c.fillStyle='#fdfdfb';rr(c,-w/2,-h/2,w,h,8);c.fill();
+    c.save();rr(c,-w/2+11,-h/2+11,w-22,w-22,4);c.clip();
+    c.fillStyle='#e2e2e2';c.fillRect(-w/2+11,-h/2+11,w-22,w-22);
+    c.fillStyle='#171310';c.beginPath();c.ellipse(0,-h/2+11+(w-22)*.6,(w-22)*.44,(w-22)*.34,0,Math.PI,TAU);c.fill();
+    c.restore();
+    c.textAlign='center';c.textBaseline='middle';c.font=F(12,'italic');c.fillStyle='#555';c.fillText('¿?',0,h/2-16);
+    c.restore();
+  }else if(v.kind==='forest'){
+    const g=c.createLinearGradient(0,0,0,CH);g.addColorStop(0,'#0f2e14');g.addColorStop(1,'#0a1c0d');c.fillStyle=g;c.fillRect(0,0,CW,CH);
+    c.font=F(60);c.textAlign='center';c.textBaseline='alphabetic';
+    for(const [x,y,s] of [[50,300,1.2],[150,260,.9],[260,320,1.3],[400,270,1],[500,310,1.15],[590,250,.9]]){c.save();c.translate(x,y);c.scale(s,s);c.fillText('🌲',0,0);c.restore();}
+    c.textAlign='center';c.textBaseline='middle';
+    c.fillStyle='#0a0a0c';c.beginPath();c.ellipse(CW/2,150,17,20,0,0,TAU);c.fill();
+    POLY(c,[[CW/2-30,300],[CW/2-15,140],[CW/2+15,140],[CW/2+30,300]],'#0a0a0c');
+    E(c,CW/2-4,148,1.8,1.3,'#ff2b2b');E(c,CW/2+4,148,1.8,1.3,'#ff2b2b');
+  }else if(v.kind==='classroom'){
+    c.fillStyle='#8a5a30';c.fillRect(0,0,CW,CH);
+    c.fillStyle='#6d4726';c.fillRect(0,0,CW,120);
+    c.fillStyle='#2f5d3a';rr(c,60,20,180,70,4);c.fill();
+    c.font=F(70);c.textAlign='center';c.textBaseline='alphabetic';c.fillText('🏫',CW/2,260);
+    c.font=F(16,'bold');c.fillStyle='#fff';c.textAlign='center';c.fillText('Sala de clases',CW/2,300);
+  }
+  if(t<.35){c.fillStyle='rgba(0,0,0,'+(1-t/.35)+')';c.fillRect(0,0,CW,CH);}
+  c.restore();
+}
 
 /* ---------- libros secretos ---------- */
 const BOOKS={"conn": {"title": "CONNECTORS", "es": "Conectores", "sub": "Connectors join ideas and make your sentences longer.", "subes": "Los conectores unen ideas y alargan tus oraciones.", "entries": [{"w": "BECAUSE", "es": "porque", "use": "Gives a REASON. It answers WHY.", "uses": "Da una razón. Responde a \"por qué\".", "ex": [["I take an umbrella because it is raining.", "Llevo paraguas porque está lloviendo."], ["I am happy because it is Friday.", "Estoy feliz porque es viernes."]], "col": "#e05555"}, {"w": "AND", "es": "y", "use": "ADDS ideas together.", "uses": "Suma ideas.", "ex": [["I like cats and dogs.", "Me gustan los gatos y los perros."], ["She sings and dances.", "Ella canta y baila."]], "col": "#2e86de"}, {"w": "BUT", "es": "pero", "use": "Shows a CONTRAST (opposite ideas).", "uses": "Muestra contraste (ideas opuestas).", "ex": [["I like tea, but I don't like coffee.", "Me gusta el té, pero no me gusta el café."], ["It is small, but it is strong.", "Es pequeño, pero es fuerte."]], "col": "#f0a030"}, {"w": "IF", "es": "si", "use": "Shows a CONDITION.", "uses": "Muestra una condición.", "ex": [["If it rains, I stay home.", "Si llueve, me quedo en casa."], ["If you study, you learn.", "Si estudias, aprendes."]], "col": "#2e9a6b"}, {"w": "SO", "es": "así que", "use": "Shows a RESULT.", "uses": "Muestra un resultado.", "ex": [["I was tired, so I slept.", "Estaba cansado, así que dormí."], ["It is late, so let us go.", "Es tarde, así que vámonos."]], "col": "#8e44ad"}, {"w": "ALTHOUGH", "es": "aunque", "use": "A CONTRAST that is a surprise.", "uses": "Un contraste inesperado.", "ex": [["Although it was cold, we played outside.", "Aunque hacía frío, jugamos afuera."], ["Although he is small, he runs fast.", "Aunque es pequeño, corre rápido."]], "col": "#c0392b"}, {"w": "THEN", "es": "luego / entonces", "use": "The NEXT step in order.", "uses": "El siguiente paso, en orden.", "ex": [["First we eat, then we play.", "Primero comemos, luego jugamos."], ["Mix it, then bake it.", "Mézclalo, luego hornéalo."]], "col": "#16a085"}, {"w": "AFTER", "es": "después de", "use": "Something happens LATER.", "uses": "Algo pasa más tarde.", "ex": [["After class, I go home.", "Después de clases, me voy a casa."], ["We eat after we play.", "Comemos después de jugar."]], "col": "#6a3fb0"}]}, "wh": {"title": "WH QUESTIONS", "es": "Preguntas WH", "sub": "WH words start questions. Each one asks for something different.", "subes": "Las palabras WH inician preguntas. Cada una pide algo distinto.", "entries": [{"w": "WHAT", "es": "qué / cuál", "use": "Asks about THINGS.", "uses": "Pregunta por cosas.", "ex": [["What is your name?", "¿Cómo te llamas?"], ["What do you like?", "¿Qué te gusta?"]], "col": "#e05555"}, {"w": "WHERE", "es": "dónde", "use": "Asks about PLACES.", "uses": "Pregunta por lugares.", "ex": [["Where do you live?", "¿Dónde vives?"], ["Where is the library?", "¿Dónde está la biblioteca?"]], "col": "#2e86de"}, {"w": "WHICH", "es": "cuál", "use": "CHOOSE between options.", "uses": "Elegir entre opciones.", "ex": [["Which color do you like?", "¿Qué color te gusta?"], ["Which is your bag?", "¿Cuál es tu mochila?"]], "col": "#f0a030"}, {"w": "WHY", "es": "por qué", "use": "Asks for a REASON. Answer with BECAUSE.", "uses": "Pregunta la razón. Se responde con BECAUSE.", "ex": [["Why are you happy?", "¿Por qué estás feliz?"], ["Because it is my birthday!", "¡Porque es mi cumpleaños!"]], "col": "#2e9a6b"}, {"w": "HOW", "es": "cómo", "use": "Asks about the WAY or how someone is.", "uses": "Pregunta cómo se hace algo o cómo está alguien.", "ex": [["How are you?", "¿Cómo estás?"], ["How old are you?", "¿Cuántos años tienes?"]], "col": "#8e44ad"}, {"w": "WHO", "es": "quién", "use": "Asks about PEOPLE.", "uses": "Pregunta por personas.", "ex": [["Who is your teacher?", "¿Quién es tu profesor?"], ["Who is she?", "¿Quién es ella?"]], "col": "#c0392b"}, {"w": "WHEN", "es": "cuándo", "use": "Asks about TIME.", "uses": "Pregunta por el tiempo.", "ex": [["When is your birthday?", "¿Cuándo es tu cumpleaños?"], ["When do you study?", "¿Cuándo estudias?"]], "col": "#16a085"}]}};
@@ -2492,7 +2603,7 @@ function frame(now){
     if((dir>0&&ui.fade>=ui.fadeTarget)||(dir<=0&&ui.fade<=ui.fadeTarget)){ui.fade=ui.fadeTarget;ui.fadeTarget=null;const r=ui.fadeRes;ui.fadeRes=null;r&&r();}
   }
   if(ui.banner){ui.banner.t-=dt;if(ui.banner.t<=0)ui.banner=null;}
-  if(ui.photo)ui.photo.t+=dt;if(ui.death)ui.death.t+=dt;if(ui.shake>0)ui.shake=Math.max(0,ui.shake-dt);
+  if(ui.photo)ui.photo.t+=dt;if(ui.vision)ui.vision.t+=dt;if(ui.death)ui.death.t+=dt;if(ui.shake>0)ui.shake=Math.max(0,ui.shake-dt);
   if(scene==='game'){stepPlayer(dt);updateNPCs(dt);updateParts(dt);checkAutoTalk();}
   if(scene==='end'){endT+=dt;confetti();updateParts(dt);}
   render();
@@ -2624,7 +2735,7 @@ function showHelp(){
 }
 function speakCurrent(){const d=ui.mode==='say'?ui.dlg:ui.mode==='choose'?ui.choice:null;if(d){if(!state.voice)state.voice=true;speak(d.en);}}
 const settings={msg:'',ok:false};
-const MAPLIST=[['patio','Patio'],['class','Sala'],['library','Biblioteca'],['cafe','Cafetería'],['hall','Auditorio'],['garden','Jardín'],['gym','Gimnasio'],['lab','Laboratorio'],['art','Arte'],['music','Música'],['plaza','Plaza'],['computer','Computación'],['teachers','Profesores'],['level4','Nivel 4'],['final','Patio final'],['books','Biblioteca sec.'],['boss','Sala de Seba']];
+const MAPLIST=[['patio','Patio'],['class','Sala'],['library','Biblioteca'],['cafe','Cafetería'],['hall','Auditorio'],['garden','Jardín'],['gym','Gimnasio'],['lab','Laboratorio'],['art','Arte'],['music','Música'],['plaza','Plaza'],['computer','Computación'],['teachers','Profesores'],['level4','Nivel 4'],['final','Patio final'],['books','Biblioteca sec.'],['bosshall','5 puertas'],['boss','Sala de Seba']];
 const ARR={patio:[9,12,'up'],garden:[2,7,'right'],plaza:[2,7,'right'],level4:[2,7,'right'],final:[2,7,'right']};
 function openSettings(){
   if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3)return;
