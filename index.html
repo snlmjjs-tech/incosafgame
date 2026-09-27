@@ -1488,7 +1488,7 @@ async function talkPrincipal(n){
     await say(n,'It is east of the Plaza. Be careful in there...','Está al este de la plaza. Ten cuidado allí dentro...');return;
   }
   if(!save.final1){
-    if(starsOf(1)<6&&!state.cheat){await say(n,'Come back with 6 stars, please.','Vuelve con 6 estrellas, por favor.');return;}
+    if(starsOf(1)<6&&!state.cheat&&!state.npcTest){await say(n,'Come back with 6 stars, please.','Vuelve con 6 estrellas, por favor.');return;}
     await say(n,'Welcome, {n}! I am Teacher Seba.','¡Bienvenido, {n}! Soy el profe Seba.');
     if(await npcTestSkip(n)){
       save.final1=true;save.level=2;save.money=(save.money||0)+1;writeSave();
@@ -1500,7 +1500,7 @@ async function talkPrincipal(n){
     save.final1=true;save.level=2;save.money=(save.money||0)+1;writeSave();
     await levelUp(1);return;
   }
-  if((save.level>=3&&starsOf(3)>=6)||state.cheat){
+  if((save.level>=3&&starsOf(3)>=6)||state.cheat||state.npcTest){
     await say(n,'Welcome back, {n}! It is time for Level 3.','¡Bienvenido de vuelta, {n}! Es hora del Nivel 3.');
     if(await npcTestSkip(n)){
       save.final3=true;save.level=4;save.money=(save.money||0)+1;writeSave();await levelUp(3);return;
@@ -1519,7 +1519,7 @@ async function talkPrincipal(n){
 }
 async function talkVice(n){
   if(save.final2){await say(n,'You passed Level 2, {n}! Go to the Plaza for Level 3.','¡Aprobaste el Nivel 2, {n}! Ve a la plaza para el Nivel 3.');return;}
-  if(starsOf(2)<6&&!state.cheat){
+  if(starsOf(2)<6&&!state.cheat&&!state.npcTest){
     await say(n,'Hello! I am the Vice Principal.','¡Hola! Soy la vicedirectora.');
     await say(n,'Come back with 6 stars from Level 2.','Vuelve con las 6 estrellas del Nivel 2.');return;
   }
