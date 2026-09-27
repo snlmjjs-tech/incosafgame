@@ -44,6 +44,7 @@ body.touch #pad{display:flex}
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
 (()=>{
 'use strict';
@@ -1566,7 +1567,7 @@ async function takePhoto(n){
     const idx=cur.npcList.indexOf(n);if(idx>=0)cur.npcList.splice(idx,1);
     n.fleeing=false;n.fleeT=0;n.x=8;n.y=6;n.tx=8;n.ty=6;n.px=undefined;n.moving=false;n.dir='down';
     await say(PLAYER,'Wait! The parrot flew away!','¡Espera! ¡El loro se voló!');
-    await say(MASCOT,"I think it went to hide in the Teachers' Room, in the Plaza!",'¡Creo que se fue a esconder a la Sala de Profesores, en la plaza!');
+    await say(MASCOT,"It must be hiding somewhere else now. Keep looking!",'¡Debe estar escondido en otro lugar ahora. Sigue buscando!');
     return;
   }
   sfx.photo();ui.photo={kind:n.animal,t:0};await wait(2300);ui.photo=null;
@@ -1585,7 +1586,7 @@ async function talkRafa(n){
   if(save.rafa===1){
     const k=photoCount();
     await say(n,'Photos: '+k+' of 5. A spider, a cat, a duck, a rabbit and a parrot!','Fotos: '+k+' de 5. ¡Una araña, un gato, un pato, un conejo y un loro!');
-    await say(n,"They are in the Teachers' Room, the Cafeteria, the Garden, the Science Lab and the Music Room.",'Están en la sala de profesores, la cafetería, el jardín, el laboratorio de ciencias y la sala de música.');
+    await say(n,'Explore the whole school to find them!','¡Explora todo el colegio para encontrarlos!');
     await say(n,'The spider is very fast, it will not be easy to catch it!','¡La araña es muy rápida, no será fácil atraparla!');return;
   }
   if(save.rafa===2){
@@ -1609,7 +1610,7 @@ async function talkLostGirl(n){
     return;
   }
   await say(n,'*sniff* I lost my phone... *sniff*','*sniff* Perdí mi celular... *sniff*');
-  await say(n,'I think I left it in the Computer Lab, over there.','Creo que lo dejé en el Laboratorio de Computación, por allá.');
+  await say(n,"I don't remember where I left it...",'No recuerdo dónde lo dejé...');
   await say(n,'Can you help me find it, {n}? Please!','¿Puedes ayudarme a encontrarlo, {n}? ¡Por favor!');
 }
 async function pickupPhone(){
@@ -1892,9 +1893,10 @@ const FIREBASE_CONFIG={
   messagingSenderId:"58699603860",
   appId:"1:58699603860:web:c17189a40f644f42f07981"
 };
-let fsDb=null;
+let fsDb=null,fsAuth=null;
+const ADMIN_EMAIL='admin@incosafito.app';
 if(FIREBASE_CONFIG&&typeof firebase!=='undefined'){
-  try{firebase.initializeApp(FIREBASE_CONFIG);fsDb=firebase.firestore();}catch(e){}
+  try{firebase.initializeApp(FIREBASE_CONFIG);fsDb=firebase.firestore();try{fsAuth=firebase.auth();}catch(e){}}catch(e){}
 }
 function computeScore(){
   const quests=[...LV[1],...LV[2],...LV[3]];
@@ -1933,6 +1935,10 @@ function clearLeaderboard(){
       return batch.commit();
     }),Promise.resolve());
   });
+}
+function adminSignIn(password){
+  if(!fsAuth)return Promise.reject(new Error('no auth'));
+  return fsAuth.signInWithEmailAndPassword(ADMIN_EMAIL,password);
 }
 let leaderboard=null,leaderboardStatus='idle';
 function fetchLeaderboard(){
@@ -2847,21 +2853,38 @@ function showHelp(){
   runScript(sayHelp);
 }
 function speakCurrent(){const d=ui.mode==='say'?ui.dlg:ui.mode==='choose'?ui.choice:null;if(d){if(!state.voice)state.voice=true;speak(d.en);}}
-const settings={msg:'',ok:false};
+const settings={msg:'',ok:false,awaitingAdminPass:false};
+function resetCodeField(){
+  codeEl.type='text';codeEl.placeholder='Código';codeEl.maxLength=12;settings.awaitingAdminPass=false;
+}
 const MAPLIST=[['patio','Patio'],['class','Sala'],['library','Biblioteca'],['cafe','Cafetería'],['hall','Auditorio'],['garden','Jardín'],['gym','Gimnasio'],['lab','Laboratorio'],['art','Arte'],['music','Música'],['plaza','Plaza'],['computer','Computación'],['teachers','Profesores'],['level4','Nivel 4'],['final','Patio final'],['books','Biblioteca sec.'],['bosshall','5 puertas'],['boss','Sala de Seba']];
 const ARR={patio:[9,12,'up'],garden:[2,7,'right'],plaza:[2,7,'right'],level4:[2,7,'right'],final:[2,7,'right']};
 function openSettings(){
   if(scene!=='game'||ui.mode!=='play'||ui.locked||player.moving||ui.fade>.3)return;
   held.length=0;scene='settings';settings.msg=state.cheat?'🔓 Modo revisión ACTIVADO':'';settings.ok=true;
-  codeEl.value='';codeEl.style.display='block';positionCode();sfx.pick();
+  resetCodeField();codeEl.value='';codeEl.style.display='block';positionCode();sfx.pick();
 }
 function closeSettings(){
   if(scene!=='settings')return;
   scene='game';codeEl.style.display='none';try{codeEl.blur();}catch(e){}held.length=0;sfx.pick();
+  resetCodeField();
 }
 function applyCode(){
   if(scene!=='settings')return;
   const v=codeEl.value.trim();codeEl.value='';
+  if(settings.awaitingAdminPass){
+    if(!v){settings.ok=false;settings.msg='Escribe la contraseña primero / Type the password first';sfx.bad();try{codeEl.focus();}catch(e){}return;}
+    settings.ok=true;settings.msg='🔒 Verificando contraseña...';
+    adminSignIn(v).then(()=>{
+      settings.msg='🗑️ Borrando el ranking...';
+      return clearLeaderboard();
+    }).then(()=>{
+      leaderboard=[];leaderboardStatus='ok';settings.msg='🗑️ ¡Ranking borrado! Se eliminaron los puntajes de todos los jugadores.';sfx.star();
+      resetCodeField();
+    }).catch(()=>{settings.ok=false;settings.msg='❌ Contraseña incorrecta o no se pudo borrar el ranking.';sfx.bad();resetCodeField();})
+    .finally(()=>{try{codeEl.focus();}catch(e){}});
+    return;
+  }
   if(v==='000'){state.cheat=!state.cheat;settings.ok=true;settings.msg=state.cheat?'🔓 ¡Modo revisión ACTIVADO! Puedes entrar a cualquier lugar.':'🔒 Modo revisión desactivado.';sfx.star();}
   else if(v==='2179'){state.npcTest=!state.npcTest;settings.ok=true;settings.msg=state.npcTest?'🧪 ¡Modo prueba NPC ACTIVADO! Los NPC solo dirán "Hola" (el examen cuenta como aprobado), las puertas cerradas se abrirán.':'🧪 Modo prueba NPC desactivado.';sfx.star();}
   else if(v==='001'){
@@ -2870,10 +2893,8 @@ function applyCode(){
     writeSave();settings.ok=true;settings.msg='⭐ ¡Todas las estrellas, $80 y acceso al último nivel desbloqueados!';sfx.star();
   }
   else if(v==='8992'){
-    settings.ok=true;settings.msg='🗑️ Borrando el ranking...';
-    clearLeaderboard().then(()=>{
-      leaderboard=[];leaderboardStatus='ok';settings.msg='🗑️ ¡Ranking borrado! Se eliminaron los puntajes de todos los jugadores.';sfx.star();
-    }).catch(()=>{settings.ok=false;settings.msg='❌ No se pudo borrar el ranking. Intenta de nuevo.';sfx.bad();});
+    settings.awaitingAdminPass=true;codeEl.type='password';codeEl.placeholder='Contraseña';codeEl.maxLength=32;
+    settings.ok=true;settings.msg='🔒 Ingresa la contraseña de administrador para borrar el ranking.';sfx.pick();
   }
   else if(!v){settings.ok=false;settings.msg='Escribe un código primero / Type a code first';sfx.bad();}
   else{settings.ok=false;settings.msg='Código incorrecto / Wrong code';sfx.bad();}
