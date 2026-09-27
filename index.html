@@ -1566,7 +1566,7 @@ async function takePhoto(n){
     const idx=cur.npcList.indexOf(n);if(idx>=0)cur.npcList.splice(idx,1);
     n.fleeing=false;n.fleeT=0;n.x=8;n.y=6;n.tx=8;n.ty=6;n.px=undefined;n.moving=false;n.dir='down';
     await say(PLAYER,'Wait! The parrot flew away!','¡Espera! ¡El loro se voló!');
-    await say(MASCOT,"I think it went to hide in the Teachers' Room, in the Plaza!",'¡Creo que se fue a esconder a la Sala de Profesores, en la plaza!');
+    await say(MASCOT,"It must be hiding somewhere else now. Keep looking!",'¡Debe estar escondido en otro lugar ahora. Sigue buscando!');
     return;
   }
   sfx.photo();ui.photo={kind:n.animal,t:0};await wait(2300);ui.photo=null;
@@ -1585,7 +1585,7 @@ async function talkRafa(n){
   if(save.rafa===1){
     const k=photoCount();
     await say(n,'Photos: '+k+' of 5. A spider, a cat, a duck, a rabbit and a parrot!','Fotos: '+k+' de 5. ¡Una araña, un gato, un pato, un conejo y un loro!');
-    await say(n,"They are in the Teachers' Room, the Cafeteria, the Garden, the Science Lab and the Music Room.",'Están en la sala de profesores, la cafetería, el jardín, el laboratorio de ciencias y la sala de música.');
+    await say(n,'Explore the whole school to find them!','¡Explora todo el colegio para encontrarlos!');
     await say(n,'The spider is very fast, it will not be easy to catch it!','¡La araña es muy rápida, no será fácil atraparla!');return;
   }
   if(save.rafa===2){
@@ -1609,7 +1609,7 @@ async function talkLostGirl(n){
     return;
   }
   await say(n,'*sniff* I lost my phone... *sniff*','*sniff* Perdí mi celular... *sniff*');
-  await say(n,'I think I left it in the Computer Lab, over there.','Creo que lo dejé en el Laboratorio de Computación, por allá.');
+  await say(n,"I don't remember where I left it...",'No recuerdo dónde lo dejé...');
   await say(n,'Can you help me find it, {n}? Please!','¿Puedes ayudarme a encontrarlo, {n}? ¡Por favor!');
 }
 async function pickupPhone(){
